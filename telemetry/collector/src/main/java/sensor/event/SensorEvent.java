@@ -1,16 +1,11 @@
-package sensorEvent.abstractClass;
+package sensor.event;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import sensor.event.*;
-import sensorEvent.*;
-import sensorEventClass.*;
+import sensor.type.SensorEventType;
 
 import java.time.Instant;
 
@@ -19,7 +14,7 @@ import java.time.Instant;
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,
         property = "type",
-        defaultImpl = DefaultSensorEvent.class
+        defaultImpl = SensorEventType.class
 )
 
 @JsonSubTypes({
@@ -32,8 +27,6 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public abstract class SensorEvent {
 
     @NotBlank(message = "Поле id не может быть пустым")
@@ -44,10 +37,5 @@ public abstract class SensorEvent {
 
     private Instant timestamp = Instant.now();
 
-    private SensorEventType type;
-
-    @NotNull(message = "Тип события не может быть = null")
-    public SensorEventType getType() {
-        return this.type;
-    }
+    public abstract SensorEventType getType();
 }

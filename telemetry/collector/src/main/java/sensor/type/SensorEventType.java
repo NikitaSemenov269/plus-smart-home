@@ -1,4 +1,4 @@
-package sensorEvent;
+package sensor.type;
 
 public enum SensorEventType {
     CLIMATE_SENSOR_EVENT,
