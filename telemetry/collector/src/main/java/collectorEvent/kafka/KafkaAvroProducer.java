@@ -23,6 +23,7 @@ public class KafkaAvroProducer {
         try (Producer<String, SensorEventAvro> producer = new KafkaProducer<>(config)) {
             ProducerRecord<String, SensorEventAvro> record =
                     new ProducerRecord<>("telemetry.sensors.v1", event);
+
             producer.send(record);
         }
     }
@@ -36,6 +37,7 @@ public class KafkaAvroProducer {
         try (Producer<String, HubEventAvro> producer = new KafkaProducer<>(config)) {
             ProducerRecord<String, HubEventAvro> record =
                     new ProducerRecord<>("telemetry.hubs.v1", event);
+
             producer.send(record);
         }
     }
