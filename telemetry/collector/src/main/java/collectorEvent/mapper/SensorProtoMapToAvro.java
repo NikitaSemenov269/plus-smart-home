@@ -1,7 +1,6 @@
 package collectorEvent.mapper;
 
 import collectorEvent.gRPC.telemetry.event.*;
-import com.google.protobuf.Timestamp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.kafka.telemetry.event.*;
@@ -57,15 +56,20 @@ public class SensorProtoMapToAvro {
                 .setPayload(sensorPayload)
                 .build();
 
+        Instant instant = convertTimestampToInstant(proto.getTimestamp());
+
         return SensorEventAvro.newBuilder()
                 .setId(proto.getId())
                 .setHubId(proto.getHubId())
-                .setTimestamp(Instant.ofEpochSecond(convertTimestamp(proto.getTimestamp())))
+                .setTimestamp(instant)
                 .setPayload(eventPayload)
                 .build();
     }
 
-    private long convertTimestamp(Timestamp timestamp) {
-        return timestamp.getSeconds() * 1000 + timestamp.getNanos() / 1_000_000;
+    private Instant convertTimestampToInstant(com.google.protobuf.Timestamp timestamp) {
+        return Instant.ofEpochSecond(
+                timestamp.getSeconds(),
+                timestamp.getNanos()
+        );
     }
 }
