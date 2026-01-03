@@ -34,22 +34,32 @@ public class HubProtoMapToAvro {
                 List<ScenarioConditionAvro> scenarioConditionAvros = new ArrayList<>();
 
                 for (DeviceActionProto deviceAction : scenarioAddedEvent.getActionList()) {
-                    DeviceActionAvro deviceActionAvro = DeviceActionAvro.newBuilder()
+                    DeviceActionAvro.Builder deviceActionAvro = DeviceActionAvro.newBuilder()
                             .setType(ActionTypeAvro.valueOf(deviceAction.getType().name()))
-                            .setSensorId(deviceAction.getSensorId())
-                            .setValue(deviceAction.getValue())
-                            .build();
-                    deviceActionAvros.add(deviceActionAvro);
+                            .setSensorId(deviceAction.getSensorId());
+
+                    if (deviceAction.hasValue()) {
+                        deviceActionAvro.setValue(deviceAction.getValue());
+                    } else {
+                        deviceActionAvro.setValue(null);
+                    }
+
+                    deviceActionAvros.add(deviceActionAvro.build());
                 }
 
                 for (ScenarioConditionProto scenarioCondition : scenarioAddedEvent.getConditionList()) {
-                    ScenarioConditionAvro scenarioConditionAvro = ScenarioConditionAvro.newBuilder()
+                    ScenarioConditionAvro.Builder builder = ScenarioConditionAvro.newBuilder()
                             .setType(ConditionTypeAvro.valueOf(scenarioCondition.getType().name()))
                             .setOperation(ConditionOperationAvro.valueOf(scenarioCondition.getOperation().name()))
-                            .setSensorId(scenarioCondition.getSensorId())
-                            .setValue(scenarioCondition.getBoolValue())
-                            .build();
-                    scenarioConditionAvros.add(scenarioConditionAvro);
+                            .setSensorId(scenarioCondition.getSensorId());
+
+                    switch (scenarioCondition.getValueCase()) {
+                        case BOOL_VALUE -> builder.setValue(scenarioCondition.getBoolValue());
+                        case INT_VALUE -> builder.setValue(scenarioCondition.getIntValue());
+                        case VALUE_NOT_SET -> builder.setValue(null);
+                    }
+
+                    scenarioConditionAvros.add(builder.build());
                 }
 
                 yield ScenarioAddedEventAvro.newBuilder()
@@ -60,8 +70,12 @@ public class HubProtoMapToAvro {
             }
             case SCENARIO_REMOVED -> {
                 ScenarioRemovedEventProto scenarioRemovedEvent = proto.getScenarioRemoved();
-                yield ScenarioRemovedEventAvro.newBuilder().setName(scenarioRemovedEvent.getName()).build();
+                yield ScenarioRemovedEventAvro.newBuilder()
+                        .setName(scenarioRemovedEvent.getName())
+                        .build();
             }
+            case PAYLOAD_NOT_SET ->
+                    throw new IllegalStateException("Payload not set in HubEventProto");
             default -> throw new IllegalStateException("Unexpected value: " + proto.getPayloadCase());
         };
 
@@ -79,7 +93,6 @@ public class HubProtoMapToAvro {
     }
 
     private Instant convertTimestampToInstant(com.google.protobuf.Timestamp timestamp) {
-        // Protobuf Timestamp -> Java Instant
         return Instant.ofEpochSecond(
                 timestamp.getSeconds(),
                 timestamp.getNanos()
