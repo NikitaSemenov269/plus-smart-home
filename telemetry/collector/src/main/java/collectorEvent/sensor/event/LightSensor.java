@@ -8,7 +8,7 @@ import collectorEvent.sensor.type.SensorEventType;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
-public class LightSensorEvent extends SensorEvent {
+public class LightSensor extends Sensor {
 
     private Integer linkQuality;
     private Integer luminosity;
