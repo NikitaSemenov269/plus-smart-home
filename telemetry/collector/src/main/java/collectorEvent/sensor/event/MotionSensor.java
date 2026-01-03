@@ -9,7 +9,7 @@ import collectorEvent.sensor.type.SensorEventType;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
-public class MotionSensorEvent extends SensorEvent {
+public class MotionSensor extends Sensor {
 
     @NotNull
     private Integer linkQuality; // качество сигнала связи.

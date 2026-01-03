@@ -9,7 +9,7 @@ import collectorEvent.sensor.type.SensorEventType;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
-public class TemperatureSensorEvent extends SensorEvent {
+public class TemperatureSensor extends Sensor {
     @NotNull
     private Integer temperatureC; // температура в градусах Цельсия.
     @NotNull

@@ -9,13 +9,17 @@ import collectorEvent.sensor.type.SensorEventType;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString(callSuper = true)
-public class SwitchSensorEvent extends SensorEvent {
+public class ClimateSensor extends Sensor {
 
     @NotNull
-    private boolean state; // текущее состояние переключателя (включено/выключено).
+    private Integer temperatureC; // Цельсия
+    @NotNull
+    private Integer humidity;
+    @NotNull
+    private Integer co2Level;
 
     @Override
     public SensorEventType getType() {
-        return SensorEventType.SWITCH_SENSOR_EVENT;
+        return SensorEventType.CLIMATE_SENSOR_EVENT;
     }
 }
