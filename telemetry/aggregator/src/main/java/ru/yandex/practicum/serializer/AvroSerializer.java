@@ -5,29 +5,34 @@ import org.apache.avro.io.DatumWriter;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.specific.SpecificDatumWriter;
 import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class AvroSerializer<T extends SpecificRecordBase> implements Serializer<T> {
+public class AvroSerializer {
 
-    @Override
-    public byte[] serialize(String topic, T data) {
-        if (data == null) {
+    private static final EncoderFactory encoderFactory = EncoderFactory.get();
+    private static final ThreadLocal<BinaryEncoder> encoderThreadLocal = new ThreadLocal<>();
+
+    public static <T extends SpecificRecordBase> byte[] serialize(T record) {
+        if (record == null) {
             return null;
         }
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            BinaryEncoder encoder = encoderFactory.binaryEncoder(out, encoderThreadLocal.get());
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        try {
-            DatumWriter<T> datumWriter = new SpecificDatumWriter<>(data.getSchema());
-            BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(outputStream, null);
-            datumWriter.write(data, encoder);
+            DatumWriter<T> writer = new SpecificDatumWriter<>(record.getSchema());
+            writer.write(record, encoder);
             encoder.flush();
-            outputStream.close();
-            return outputStream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to serialize Avro object", e);
+
+            encoderThreadLocal.set(encoder);
+            return out.toByteArray();
+        } catch (IOException ex) {
+            throw new SerializationException(
+                    String.format("Ошибка сериализации Avro объекта типа [%s]",
+                            record.getClass().getSimpleName()), ex);
         }
     }
 }

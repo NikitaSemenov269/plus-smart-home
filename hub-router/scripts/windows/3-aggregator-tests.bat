@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-REM Локальный запуск тестов Hub Router для проверки связки kafka.collectorEvent.CollectorEvent (grpc) + Aggregator
+REM Локальный запуск тестов Hub Router для проверки связки Collector (grpc) + Aggregator
 
 set "JAR_PATH=%~dp0..\hub-router.jar"
 
