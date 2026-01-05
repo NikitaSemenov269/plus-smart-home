@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-REM Локальный запуск тестов Hub Router для проверки сервиса kafka.collectorEvent.CollectorEvent
+REM Локальный запуск тестов Hub Router для проверки сервиса Collector
 
 set "JAR_PATH=%~dp0..\hub-router.jar"
 
