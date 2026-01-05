@@ -23,10 +23,6 @@ import java.time.Duration;
 @ConfigurationProperties("aggregator.kafka")
 public class KafkaConfig {
 
-    // Общие настройки
-    private String bootstrapServers;
-
-    // Инжектим конфигурационные классы
     @Autowired
     private AggregatorProducerConfig producerConfig;
 
