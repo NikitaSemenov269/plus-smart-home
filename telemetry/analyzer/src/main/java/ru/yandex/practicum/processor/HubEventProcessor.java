@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Component
 @Slf4j
+@Component
 public class HubEventProcessor implements Runnable {
 
     private final Consumer<String, HubEventAvro> hubConsumer;
