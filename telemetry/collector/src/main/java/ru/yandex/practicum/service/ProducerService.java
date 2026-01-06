@@ -9,5 +9,4 @@ public interface ProducerService {
 
     void processSensorEvent(SensorEventProto sensorEventProto);
 
-
 }

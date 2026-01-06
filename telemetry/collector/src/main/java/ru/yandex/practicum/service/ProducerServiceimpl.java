@@ -25,7 +25,7 @@ public class ProducerServiceimpl implements ProducerService {
     private final Map<SensorEventProto.PayloadCase, SensorEventMapper> sensorEventMappers;
     private final Map<HubEventProto.PayloadCase, HubEventMapper> hubEventMappers;
 
-    public ProducerServiceimpl (
+    public ProducerServiceimpl(
             KafkaClient kafkaClient,
             List<SensorEventMapper> sensorEventMappers,
             List<HubEventMapper> hubEventMappers
