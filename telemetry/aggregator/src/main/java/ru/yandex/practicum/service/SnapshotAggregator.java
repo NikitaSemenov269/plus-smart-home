@@ -15,7 +15,7 @@ public class SnapshotAggregator {
 
     private final Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
 
-    Optional<SensorsSnapshotAvro> updateState(SensorEventAvro event) {
+    public Optional<SensorsSnapshotAvro> updateState(SensorEventAvro event) {
         if (event == null || event.getHubId() == null || event.getId() == null) {
             return Optional.empty();
         }
