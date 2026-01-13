@@ -5,11 +5,14 @@ spring:
     active: native
   cloud:
     config:
-      fail-fast: true
-      retry:
-        useRandomPolicy: true
-        max-interval: 6000
       server:
         native:
           searchLocations:
             - classpath:config/telemetry/{application}
+      fail-fast: true
+      retry:
+        useRandomPolicy: true
+        max-interval: 6000
+
+server:
+  port: 8888
