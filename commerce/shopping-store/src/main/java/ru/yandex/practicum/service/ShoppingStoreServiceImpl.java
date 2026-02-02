@@ -11,7 +11,7 @@ import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.DTO.shoppingStore.SetProductQuantity;
 import ru.yandex.practicum.enums.shoppingStore.ProductCategory;
 import ru.yandex.practicum.interfaces.RepositoryShoppingStore;
-import ru.yandex.practicum.interfaces.ServiceShoppingStore;
+import ru.yandex.practicum.interfaces.ShoppingStoreService;
 import ru.yandex.practicum.mapper.MapperShoppingStore;
 import ru.yandex.practicum.model.Product;
 
@@ -22,17 +22,20 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ServiceShoppingStoreImpl implements ServiceShoppingStore {
+public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     private final RepositoryShoppingStore repository;
     private final MapperShoppingStore mapper;
 
     @Override
     @Transactional(readOnly = true)
     public Page<Product> findAllByProductCategory(ProductCategory category, Pageable pageable) {
-
-        // !!! !!! !!!
-
-        return null;
+        try {
+            log.info("");
+            return repository.findAllByProductCategory(category, pageable);
+        } catch (RuntimeException e) {
+            log.error("");
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -42,9 +45,8 @@ public class ServiceShoppingStoreImpl implements ServiceShoppingStore {
         if (dto.getProductId() != null) {
             throw new RuntimeException();
         }
-
-        Product product = mapper.toProduct(dto);
         try {
+            Product product = mapper.toProduct(dto);
             Product newProduct = repository.saveAndFlush(product);
             return String.format(
                     "Товар успешно добавлен. Товару присвоен ID: %s", newProduct.getProductId());
@@ -60,15 +62,13 @@ public class ServiceShoppingStoreImpl implements ServiceShoppingStore {
         Product product = repository.findById(productDto.getProductId()).orElseThrow(NotFoundException::new);
 
         mapper.updateProduct(productDto, product);
-        log.info("");
+        log.info("Продукт с ID: {} успешно обновлен.", productDto.getProductId());
         return mapper.toDto(product);
     }
 
     @Override
     @Transactional
     public boolean deleteProductFromAssortment(UUID productId) {
-        validationId(productId);
-
         if (!repository.existsById(productId)) {
             log.info("Продукт с ID: {} не найден в базе данных.", productId);
             return true;
@@ -86,8 +86,6 @@ public class ServiceShoppingStoreImpl implements ServiceShoppingStore {
     @Override
     @Transactional
     public boolean SettingTheStatus(SetProductQuantity setProductQuantity) {
-        validationId(setProductQuantity.getProductId());
-
         if (!repository.existsById(setProductQuantity.getProductId())) {
             log.info("");
             throw new NotFoundException();
@@ -105,16 +103,8 @@ public class ServiceShoppingStoreImpl implements ServiceShoppingStore {
 
     @Override
     @Transactional(readOnly = true)
-    public ProductDto getInformation(UUID productId) {
-        validationId(productId);
+    public ProductDto getProductById(UUID productId) {
         Product product = repository.findById(productId).orElseThrow(NotFoundException::new);
         return mapper.toDto(product);
-    }
-
-    private void validationId(UUID productId) {
-        if (productId == null) {
-            log.error("");
-            throw new NullPointerException();
-        }
     }
 }

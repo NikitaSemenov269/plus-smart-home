@@ -14,7 +14,8 @@ import java.util.UUID;
 
 public interface RepositoryShoppingStore extends JpaRepository<Product, UUID> {
 
-    Page<Product> findAllByProductCategory(ProductCategory category, Pageable pageable);
+    @Query("SELECT p FROM Product p WHERE p.productCategory = :category AND p.productState = 'ACTIVE'")
+    Page<Product> findAllByProductCategory(@Param("category") ProductCategory category, Pageable pageable);
 
     @Modifying
     @Query("UPDATE Product p SET p.productState = 'DEACTIVATE' WHERE p.productId = :productId")

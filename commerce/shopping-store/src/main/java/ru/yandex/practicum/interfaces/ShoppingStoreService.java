@@ -9,7 +9,7 @@ import ru.yandex.practicum.model.Product;
 
 import java.util.UUID;
 
-public interface ServiceShoppingStore {
+public interface ShoppingStoreService {
 
     Page<Product> findAllByProductCategory(ProductCategory category, Pageable pageable);
 
@@ -21,5 +21,5 @@ public interface ServiceShoppingStore {
 
     boolean SettingTheStatus(SetProductQuantity setProductQuantity);
 
-    ProductDto getInformation(UUID productId);
+    ProductDto getProductById(UUID productId);
 }
