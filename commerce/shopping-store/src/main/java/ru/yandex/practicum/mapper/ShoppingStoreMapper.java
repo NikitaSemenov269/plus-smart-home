@@ -5,7 +5,7 @@ import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.model.Product;
 
 @Mapper(componentModel = "spring")
-public interface MapperShoppingStore {
+public interface ShoppingStoreMapper {
 
     Product toProduct(ProductDto dto);
 

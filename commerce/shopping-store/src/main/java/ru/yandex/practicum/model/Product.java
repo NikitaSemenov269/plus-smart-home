@@ -9,7 +9,6 @@ import ru.yandex.practicum.enums.shoppingStore.QuantityState;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-
 @Getter
 @Setter
 @NoArgsConstructor
