@@ -15,11 +15,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "warehouse_products")
 public class ProductOfWarehouse {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "warehouse_product_id")
-    private Long id;
 
+    @Id
     @Column(name = "product_id", nullable = false, updatable = false)
     private UUID productId; // ID товара из каталога
 
@@ -29,9 +26,9 @@ public class ProductOfWarehouse {
     @Column(name = "weight", nullable = false)
     Double weight;
 
-    @Column(name = "quantity", nullable = false)
-    Long quantity;
-
     @Column(name = "fragile", nullable = false)
     Boolean fragile;
+
+    @Column(name = "quantity", nullable = false)
+    Long quantity;
 }
