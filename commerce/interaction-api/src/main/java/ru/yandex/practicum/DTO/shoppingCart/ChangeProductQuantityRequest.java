@@ -12,8 +12,8 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class ChangeProductQuantityRequest {
 
     @NotNull

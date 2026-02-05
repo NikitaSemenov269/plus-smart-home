@@ -11,11 +11,6 @@
 
     <artifactId>shopping-store</artifactId>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
-    </properties>
-
     <dependencies>
         <!--DTO-->
         <dependency>
@@ -104,21 +99,6 @@
 
     <build>
         <plugins>
-            <!-- Maven Compiler Plugin for Lombok -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-
             <!-- Spring Boot Plugin for Executable JARs -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>

@@ -47,10 +47,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     // В будущем будет валидация пользователя
     @Override
     @Transactional(readOnly = true)
-    public ShoppingCartDto getShoppingCartOfUser(UUID shoppingCartId) {
-        return repository.findById(shoppingCartId)
+    public ShoppingCartDto getShoppingCartOfUser(String username) {
+        return repository.findByUsername(username)
                 .map(cart -> {
-                            log.info("Найдена корзина c ID: {}", shoppingCartId);
+                            log.info("Найдена корзина c ID: {}", cart.getShoppingCartId());
                             return mapper.toDto(cart);
                         }
                 )
