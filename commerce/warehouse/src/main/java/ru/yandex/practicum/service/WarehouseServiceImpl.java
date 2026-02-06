@@ -11,10 +11,12 @@ import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
 import ru.yandex.practicum.interfaces.WarehouseRepository;
 import ru.yandex.practicum.interfaces.WarehouseService;
 import ru.yandex.practicum.mapper.WarehouseMapper;
+import ru.yandex.practicum.model.Dimension;
+import ru.yandex.practicum.model.ProductOfWarehouse;
 
 import java.security.SecureRandom;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -45,11 +47,59 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     @Override
+    @Transactional
     public BookedProductsDto checkQuantityOfGoodsInStock(ShoppingCartDto shoppingCartDto) {
+        if (shoppingCartDto.getShoppingCartId() == null || shoppingCartDto.getProducts().isEmpty()) {
+            throw new IllegalArgumentException("");
+        }
 
-        return null;
+        Map<UUID, Integer> requestedProducts = shoppingCartDto.getProducts();
+        List<ProductOfWarehouse> allProducts = repository.findAllById(shoppingCartDto.getProducts().keySet());
+
+        if (requestedProducts.size() > allProducts.size()) {
+            // throw new ...
+        }
+
+        List<ProductOfWarehouse> verifiedProducts = new ArrayList<>();
+        List<ProductOfWarehouse> unverifiedProducts = new ArrayList<>();
+
+        allProducts.forEach(
+                product -> {
+                    if (product.getQuantity() >= requestedProducts.get(product.getProductId())) {
+                        verifiedProducts.add(product);
+                    } else {
+                        unverifiedProducts.add(product);
+                    }
+                });
+
+        if (!unverifiedProducts.isEmpty()) {
+            //  throw new ProductInShoppingCartLowQuantityInWarehouse(unverifiedProducts);
+        }
+
+        return BookedProductsDto.builder()
+                // Суммарная масса
+                .deliveryWeight(verifiedProducts.stream()
+                        .mapToDouble(ProductOfWarehouse::getWeight)
+                        .sum()
+                )
+                // Суммарный объем.
+                .deliveryVolume(verifiedProducts.stream()
+                        .mapToDouble(product -> {
+                            return product.getDimension().getDepth() *
+                                    product.getDimension().getHeight() *
+                                    product.getDimension().getWidth();
+                        }).sum()
+                )
+                // Хрупкость
+                .fragile(verifiedProducts.stream()
+                        .anyMatch(ProductOfWarehouse::getFragile))
+                .build();
     }
 
+
+    private Double calculateVolume(Dimension dimension) {
+        return dimension.getWidth() * dimension.getHeight() * dimension.getDepth();
+    }
 
     @Transactional(readOnly = true)
     private void validIdProduct(UUID idProduct) {

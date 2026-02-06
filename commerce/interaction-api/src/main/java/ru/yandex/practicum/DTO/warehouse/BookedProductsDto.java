@@ -5,6 +5,7 @@ import lombok.*;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookedProductsDto {
@@ -14,6 +15,6 @@ public class BookedProductsDto {
     @NotNull
     private Double deliveryVolume; // Общие объём доставки.
     @NotNull
-    private Double fragile; // Есть ли хрупкие вещи в доставке.
+    private Boolean fragile; // Есть ли хрупкие вещи в доставке.
 
 }
