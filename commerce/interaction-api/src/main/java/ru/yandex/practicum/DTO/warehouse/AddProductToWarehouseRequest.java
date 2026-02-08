@@ -1,6 +1,7 @@
 package ru.yandex.practicum.DTO.warehouse;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,5 +18,6 @@ public class AddProductToWarehouseRequest {
     private UUID productId;
 
     @NotNull
-    private Double quantity;
+    @Positive
+    private Long quantity;
 }

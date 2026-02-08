@@ -6,12 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
+import ru.yandex.practicum.DTO.warehouse.AddProductToWarehouseRequest;
+import ru.yandex.practicum.DTO.warehouse.AddressDto;
 import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
 import ru.yandex.practicum.interfaces.WarehouseRepository;
 import ru.yandex.practicum.interfaces.WarehouseService;
 import ru.yandex.practicum.mapper.WarehouseMapper;
-import ru.yandex.practicum.model.Dimension;
 import ru.yandex.practicum.model.ProductOfWarehouse;
 
 import java.security.SecureRandom;
@@ -47,64 +48,102 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public BookedProductsDto checkQuantityOfGoodsInStock(ShoppingCartDto shoppingCartDto) {
+        log.info("");
         if (shoppingCartDto.getShoppingCartId() == null || shoppingCartDto.getProducts().isEmpty()) {
-            throw new IllegalArgumentException("");
+            log.info("");
+            return emptyCart();
         }
 
         Map<UUID, Integer> requestedProducts = shoppingCartDto.getProducts();
-        List<ProductOfWarehouse> allProducts = repository.findAllById(shoppingCartDto.getProducts().keySet());
+        List<ProductOfWarehouse> products = repository.findAllById(requestedProducts.keySet());
 
-        if (requestedProducts.size() > allProducts.size()) {
-            // throw new ...
+        if (products.size() < requestedProducts.size()) {
+            Set<UUID> foundIds = products.stream()
+                    .map(ProductOfWarehouse::getProductId)
+                    .collect(Collectors.toSet());
+            Set<UUID> missingIds = requestedProducts.keySet().stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .collect(Collectors.toSet());
+
+            throw new ProductInShoppingCartLowQuantityInWarehouse(
+                    "Товары не найдены на складе: " + missingIds
+            );
         }
 
+        Map<UUID, Integer> insufficientProducts = new HashMap<>();
         List<ProductOfWarehouse> verifiedProducts = new ArrayList<>();
-        List<ProductOfWarehouse> unverifiedProducts = new ArrayList<>();
 
-        allProducts.forEach(
-                product -> {
-                    if (product.getQuantity() >= requestedProducts.get(product.getProductId())) {
-                        verifiedProducts.add(product);
-                    } else {
-                        unverifiedProducts.add(product);
-                    }
-                });
+        for (ProductOfWarehouse product : products) {
+            Integer requestedQty = requestedProducts.get(product.getProductId());
 
-        if (!unverifiedProducts.isEmpty()) {
-            //  throw new ProductInShoppingCartLowQuantityInWarehouse(unverifiedProducts);
+            if (product.getQuantity() >= requestedQty) {
+                verifiedProducts.add(product);
+            } else {
+                insufficientProducts.put(
+                        product.getProductId(),
+                        (int) (requestedQty - product.getQuantity())
+                );
+            }
+        }
+
+        if (!insufficientProducts.isEmpty()) {
+            throw new ProductInShoppingCartLowQuantityInWarehouse(
+                    "Недостаточно товаров: " + insufficientProducts
+            );
         }
 
         return BookedProductsDto.builder()
                 // Суммарная масса
                 .deliveryWeight(verifiedProducts.stream()
                         .mapToDouble(ProductOfWarehouse::getWeight)
-                        .sum()
-                )
+                        .sum())
                 // Суммарный объем.
                 .deliveryVolume(verifiedProducts.stream()
-                        .mapToDouble(product -> {
-                            return product.getDimension().getDepth() *
-                                    product.getDimension().getHeight() *
-                                    product.getDimension().getWidth();
-                        }).sum()
-                )
+                        .mapToDouble(product ->
+                                product.getDimension().getWidth() *
+                                        product.getDimension().getHeight() *
+                                        product.getDimension().getDepth())
+                        .sum())
                 // Хрупкость
                 .fragile(verifiedProducts.stream()
                         .anyMatch(ProductOfWarehouse::getFragile))
                 .build();
     }
 
+    @Override
+    @Transactional
+    public void increaseProductQuantity(AddProductToWarehouseRequest request) {
+        log.debug("Изменение остатков продукта {} на складе.", request);
+        validIdProduct(request.getProductId());
+        ProductOfWarehouse product = repository.getReferenceById(request.getProductId());
+        product.setQuantity(request.getQuantity());
+    }
 
-    private Double calculateVolume(Dimension dimension) {
-        return dimension.getWidth() * dimension.getHeight() * dimension.getDepth();
+    @Override
+    public AddressDto getWarehouseAddress() {
+        return AddressDto.builder()
+                .country(CURRENT_ADDRESS)
+                .city(CURRENT_ADDRESS)
+                .street(CURRENT_ADDRESS)
+                .house(CURRENT_ADDRESS)
+                .flat(CURRENT_ADDRESS)
+                .build();
+    }
+
+    private BookedProductsDto emptyCart() {
+        return BookedProductsDto.builder()
+                .deliveryWeight(0.0)
+                .deliveryVolume(0.0)
+                .fragile(false)
+                .build();
     }
 
     @Transactional(readOnly = true)
     private void validIdProduct(UUID idProduct) {
         if (!repository.existsById(idProduct)) {
-            throw new NotFoundException("Продукт не найден на складе.");
+            throw new NotFoundException("Продукт c ID: " + idProduct + " не найден на складе.");
         }
     }
 }
