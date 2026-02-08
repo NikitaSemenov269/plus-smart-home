@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>shopping-store</artifactId>
+    <artifactId>shopping-cart</artifactId>
 
     <dependencies>
         <!--DTO-->
@@ -108,7 +108,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
                 <configuration>
                     <annotationProcessorPaths>
                         <path>
@@ -131,5 +130,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

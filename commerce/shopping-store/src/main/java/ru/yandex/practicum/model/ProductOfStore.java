@@ -9,7 +9,6 @@ import ru.yandex.practicum.enums.shoppingStore.QuantityState;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(name = "products")
-public class Product {
+public class ProductOfStore {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
