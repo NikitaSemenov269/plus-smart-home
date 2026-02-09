@@ -12,5 +12,7 @@ public interface WarehouseMapper {
 
     Dimension toDimension(DimensionDto dto); // вспомогательный метод
 
-    NewProductInWarehouseRequest toDto(Dimension dimension);
+    NewProductInWarehouseRequest toDimensionDto(ProductOfWarehouse product);
+
+    DimensionDto toDimensionDto(Dimension dimension);
 }

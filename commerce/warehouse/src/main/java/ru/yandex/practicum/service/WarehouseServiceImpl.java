@@ -41,7 +41,6 @@ public class WarehouseServiceImpl implements WarehouseService {
         if (repository.existsById(newProduct.getProductId())) {
             throw new SpecifiedProductAlreadyInWarehouseException("Продукт уже имеется на складе.");
         }
-
         repository.save(mapper.toEntity(newProduct));
         log.info("Продукт с ID: {} успешно добавлен на склад.", newProduct.getProductId());
     }

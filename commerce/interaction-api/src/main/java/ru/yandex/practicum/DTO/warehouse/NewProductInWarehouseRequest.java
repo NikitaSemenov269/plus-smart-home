@@ -24,6 +24,10 @@ public class NewProductInWarehouseRequest {
     @Valid
     private DimensionDto dimension;
 
+    @Min(value = 0, message = "Количество товара не может быть отрицательным.")
+    @Builder.Default
+    private Long quantity = 0L;
+
     @Min(value = 1, message = "Вес товара не может быть меньше 1.")
     @Builder.Default
     private Double weight = 1.0;
