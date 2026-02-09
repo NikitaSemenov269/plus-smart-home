@@ -1,6 +1,5 @@
 package ru.yandex.practicum.interfaces;
 
-
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
 import ru.yandex.practicum.DTO.warehouse.AddProductToWarehouseRequest;
 import ru.yandex.practicum.DTO.warehouse.AddressDto;

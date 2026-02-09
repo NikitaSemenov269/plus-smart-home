@@ -10,11 +10,11 @@ import lombok.*;
 @AllArgsConstructor
 public class BookedProductsDto {
 
-    @NotNull
+    @NotNull(message = "Вес доставки обязательный параметр.")
     private Double deliveryWeight; // Общий вес доставки.
-    @NotNull
+    @NotNull(message = "Объем доставки обязательный параметр.")
     private Double deliveryVolume; // Общие объём доставки.
-    @NotNull
+    @NotNull(message = "Хрупкость обязательный параметр.")
     private Boolean fragile; // Есть ли хрупкие вещи в доставке.
 
 }

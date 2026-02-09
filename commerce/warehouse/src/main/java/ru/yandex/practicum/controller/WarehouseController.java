@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
+import ru.yandex.practicum.DTO.warehouse.AddProductToWarehouseRequest;
 import ru.yandex.practicum.DTO.warehouse.AddressDto;
 import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
@@ -20,7 +20,6 @@ import ru.yandex.practicum.interfaces.WarehouseService;
 @RequestMapping("/api/v1/warehouse")
 public class WarehouseController {
     private final WarehouseService service;
-
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
@@ -36,13 +35,12 @@ public class WarehouseController {
         return service.checkQuantityOfGoodsInStock(shoppingCartDto);
     }
 
-
-/*    @PostMapping("/add")
+    @PostMapping("/add")
     @ResponseStatus(HttpStatus.OK)
-    public void increaseProductQuantity(@Valid @RequestBody AddProductToWarehouseRequest request) {
+    public void increaseProductQuantity(@Valid AddProductToWarehouseRequest request) {
         log.debug("Пополнение запасов: {}", request);
-        warehouseService.increaseProductQuantity(request);
-    }*/
+        service.increaseProductQuantity(request);
+    }
 
     @GetMapping("/address")
     @ResponseStatus(HttpStatus.OK)
@@ -50,5 +48,4 @@ public class WarehouseController {
         log.info("Запрос адреса склада");
         return service.getWarehouseAddress();
     }
-
 }
