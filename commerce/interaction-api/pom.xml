@@ -33,6 +33,12 @@
             <artifactId>expressly</artifactId>
             <version>5.0.0</version>
         </dependency>
+
+        <!--Feign Client-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
