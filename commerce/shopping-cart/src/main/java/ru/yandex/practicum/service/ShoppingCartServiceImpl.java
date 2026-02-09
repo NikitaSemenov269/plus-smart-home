@@ -147,21 +147,28 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             throw new NoProductsInShoppingCartException("Корзина не содержит изменяемые товары.");
         }
         if (!CartState.DEACTIVATE.equals(shoppingCart.getCartState())) {
-            try {
-                warehouseApi.checkQuantityOfGoodsInStock(mapper.toDto(shoppingCart));
-            } catch (FeignException e) {
-                log.error("Warehouse check failed: {}", e.getMessage());
-                log.error("Ошибка при проверке наличия товаров на складе: {}", e.getMessage());
+            if (shoppingCart.getProducts().get(changeQuantity.getProductId()) < changeQuantity.getNewQuantity()) {
+                try {
+                    warehouseApi.checkQuantityOfGoodsInStock(
+                            ShoppingCartDto.builder()
+                                    .shoppingCartId(shoppingCart.getShoppingCartId())
+                                    .products(Map.of(changeQuantity.getProductId(), changeQuantity.getNewQuantity()))
+                                    .build()
+                    );
+                } catch (FeignException e) {
+                    log.error("Warehouse check failed: {}", e.getMessage());
+                    log.error("Ошибка при проверке наличия товаров на складе: {}", e.getMessage());
 
-                if (e.status() == 400) {
-                    throw new IllegalArgumentException("Товары недоступны в запрашиваемом количестве");
+                    if (e.status() == 400) {
+                        throw new IllegalArgumentException("Товары недоступны в запрашиваемом количестве");
+                    }
+                    log.warn("Сервис склада временно недоступен. Товары добавлены в корзину без проверки.");
                 }
-                log.warn("Сервис склада временно недоступен. Товары добавлены в корзину без проверки.");
             }
             shoppingCart.getProducts().put(
                     changeQuantity.getProductId(),
                     changeQuantity.getNewQuantity());
-            log.info("");
+            log.info("Количество товара успешно обновлено.");
         } else {
             log.info(CART_IS_DEACTIVATE, shoppingCart.getShoppingCartId());
         }
