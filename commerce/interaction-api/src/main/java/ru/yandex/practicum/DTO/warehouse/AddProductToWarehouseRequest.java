@@ -14,10 +14,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddProductToWarehouseRequest {
-    @NotNull
+    @NotNull(message = "ID продукта обязательное поле.")
     private UUID productId;
 
-    @NotNull
-    @Positive
+    @NotNull(message = "Количество не может равняться null")
+    @Positive(message = "Количество не может быть отрицательным числом.")
     private Long quantity;
 }

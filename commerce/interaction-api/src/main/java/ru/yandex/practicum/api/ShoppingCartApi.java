@@ -1,20 +1,33 @@
 package ru.yandex.practicum.api;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.DTO.shoppingCart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
+
+import java.util.Set;
+import java.util.UUID;
 
 @FeignClient(name = "shopping-cart", path = "/api/v1/shopping-cart")
 public interface ShoppingCartApi {
 
     @PutMapping
-    ShoppingCartDto addProductsAtShoppingCart(@RequestParam @NotBlank String username,
-                                              @Valid @RequestBody ShoppingCartDto shoppingCartDto);
+    ShoppingCartDto addProductsAtShoppingCart(@RequestParam String username,
+                                              @RequestBody ShoppingCartDto shoppingCartDto);
+
     @GetMapping
-    ShoppingCartDto getShoppingCartOfUser(@RequestParam
-                                          @NotBlank String username);
+    ShoppingCartDto getShoppingCartOfUser(@RequestParam String username);
 
+    @DeleteMapping
+    void deactivatingTheShoppingCart(@RequestParam String username);
 
+    @PostMapping("/remove")
+    ShoppingCartDto deleteItemsFromShoppingCart(@RequestParam String username,
+                                                @RequestParam Set<UUID> productIds);
+
+    @PostMapping("change-quantity")
+    ShoppingCartDto changeNumberOfItemsInTheBasket(
+            @RequestParam
+            String username,
+            @RequestBody ChangeProductQuantityRequest changeQuantity);
 }

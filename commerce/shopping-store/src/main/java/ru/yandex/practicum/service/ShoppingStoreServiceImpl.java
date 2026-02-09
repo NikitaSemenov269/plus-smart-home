@@ -10,14 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.DTO.shoppingStore.SetProductQuantity;
 import ru.yandex.practicum.enums.shoppingStore.ProductCategory;
+import ru.yandex.practicum.exception.shoppingStore.ProductNotFoundException;
 import ru.yandex.practicum.interfaces.RepositoryShoppingStore;
 import ru.yandex.practicum.interfaces.ShoppingStoreService;
 import ru.yandex.practicum.mapper.ShoppingStoreMapper;
 import ru.yandex.practicum.model.ProductOfStore;
 
 import java.util.UUID;
-
-// ДОРАБОТАТЬ ИСКЛЮЧЕНИЕ
 
 @Slf4j
 @Service
@@ -29,13 +28,8 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     @Override
     @Transactional(readOnly = true)
     public Page<ProductDto> findAllByProductCategory(ProductCategory category, Pageable pageable) {
-        try {
-            log.info("");
-            return repository.findAllByProductCategory(category, pageable).map(mapper::toDto);
-        } catch (RuntimeException e) {
-            log.error("");
-            throw new RuntimeException(e);
-        }
+        log.info("Начато получение всех товаров {} категории.", category);
+        return repository.findAllByProductCategory(category, pageable).map(mapper::toDto);
     }
 
     @Override
@@ -43,16 +37,18 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     public ProductDto createProduct(ProductDto dto) {
         // Если у нового объекта уже есть ID - отмена создания данного объекта.
         if (dto.getProductId() != null) {
-            throw new RuntimeException();
+            if (repository.existsById(dto.getProductId())) {
+                log.info("Выявлена попытка создания нового товара с установленным ID. Начат поиск товара в БД.");
+                return mapper.toDto(repository.findById(dto.getProductId()).orElseThrow(
+                        () -> new ProductNotFoundException("Товар с ID {} не найден. Создание товара с установленным ID " +
+                                "не допускается.")));
+            }
+            throw new IllegalArgumentException("Создание товара с установленным ID " + dto.getProductId() +
+                    "не допускается.");
         }
-        try {
-            ProductOfStore newProduct = repository.save(mapper.toProduct(dto));
-            log.info("Товар успешно добавлен. Товару присвоен ID: {}", newProduct.getProductId());
-            return mapper.toDto(newProduct);
-        } catch (RuntimeException e) {
-            log.error("В процессе добавления нового товара возникла ошибка.", e);
-            throw new RuntimeException(e);
-        }
+        ProductOfStore newProduct = repository.save(mapper.toProduct(dto));
+        log.info("Товар успешно добавлен. Товару присвоен ID: {}", newProduct.getProductId());
+        return mapper.toDto(newProduct);
     }
 
     @Override
@@ -68,39 +64,31 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     @Transactional
     public boolean deleteProductFromAssortment(UUID productId) {
         // Отсутствие товара в БД не ведет к 404 и считается корректным случаем удаления товара.
-        try {
-            if (!repository.existsById(productId)) {
-                log.info("Продукт с ID: {} не найден в базе данных.", productId);
-                return true;
-            }
-            repository.deactivateProduct(productId);
-            log.info("Продукт с ID: {} успешно удален из ассортимента.", productId);
+        if (!repository.existsById(productId)) {
+            log.info("Продукт с ID: {} не найден в базе данных.", productId);
             return true;
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
         }
+        repository.deactivateProduct(productId);
+        log.info("Продукт с ID: {} успешно удален из ассортимента.", productId);
+        return true;
     }
 
     @Override
     @Transactional
     public boolean SettingTheStatus(SetProductQuantity setProductQuantity) {
         if (!repository.existsById(setProductQuantity.getProductId())) {
-            log.info("");
-            throw new NotFoundException();
+            throw new ProductNotFoundException("Не удалось изменить статут остатка продукта.");
         }
-        try {
-            repository.settingTheStatus(setProductQuantity.getProductId(), setProductQuantity.getQuantityState());
-            log.info("");
-            return true;
-        } catch (RuntimeException e) {
-            log.error("");
-            throw new RuntimeException(e);
-        }
+        repository.settingTheStatus(setProductQuantity.getProductId(), setProductQuantity.getQuantityState());
+        log.info("Статус остатка продукта ID {} успешно изменен на {}", setProductQuantity.getProductId(),
+                setProductQuantity.getQuantityState());
+        return true;
     }
 
     @Override
     @Transactional(readOnly = true)
     public ProductDto getProductById(UUID productId) {
+        log.info("Начата попытка получения продукта по ID {}", productId);
         ProductOfStore product = repository.findById(productId).orElseThrow(NotFoundException::new);
         return mapper.toDto(product);
     }

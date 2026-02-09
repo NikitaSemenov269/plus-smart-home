@@ -1,6 +1,5 @@
 package ru.yandex.practicum.service;
 
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,6 +9,9 @@ import ru.yandex.practicum.DTO.warehouse.AddProductToWarehouseRequest;
 import ru.yandex.practicum.DTO.warehouse.AddressDto;
 import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
+import ru.yandex.practicum.exception.warehouse.NoSpecifiedProductInWarehouseException;
+import ru.yandex.practicum.exception.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
+import ru.yandex.practicum.exception.warehouse.SpecifiedProductAlreadyInWarehouseException;
 import ru.yandex.practicum.interfaces.WarehouseRepository;
 import ru.yandex.practicum.interfaces.WarehouseService;
 import ru.yandex.practicum.mapper.WarehouseMapper;
@@ -37,22 +39,19 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Transactional
     public void addNewProductToTheWarehouse(NewProductInWarehouseRequest newProduct) {
         if (repository.existsById(newProduct.getProductId())) {
-            //  throw new BadAttributeValueExpException("Продукт уже имеется на складе."); кастомное искл.
+            throw new SpecifiedProductAlreadyInWarehouseException("Продукт уже имеется на складе.");
         }
-        try {
-            repository.save(mapper.toEntity(newProduct));
-            log.info("");
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
+
+        repository.save(mapper.toEntity(newProduct));
+        log.info("Продукт с ID: {} успешно добавлен на склад.", newProduct.getProductId());
     }
 
     @Override
     @Transactional(readOnly = true)
     public BookedProductsDto checkQuantityOfGoodsInStock(ShoppingCartDto shoppingCartDto) {
-        log.info("");
+        log.info("Начало проверки достаточности товаров на складе.");
         if (shoppingCartDto.getShoppingCartId() == null || shoppingCartDto.getProducts().isEmpty()) {
-            log.info("");
+            log.info("Для проверки была передана пустая корзина.");
             return emptyCart();
         }
 
@@ -67,9 +66,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                     .filter(id -> !foundIds.contains(id))
                     .collect(Collectors.toSet());
 
-            throw new ProductInShoppingCartLowQuantityInWarehouse(
-                    "Товары не найдены на складе: " + missingIds
-            );
+            throw new NoSpecifiedProductInWarehouseException("Товары не найдены на складе: " + missingIds);
         }
 
         Map<UUID, Integer> insufficientProducts = new HashMap<>();
@@ -143,7 +140,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Transactional(readOnly = true)
     private void validIdProduct(UUID idProduct) {
         if (!repository.existsById(idProduct)) {
-            throw new NotFoundException("Продукт c ID: " + idProduct + " не найден на складе.");
+            throw new NoSpecifiedProductInWarehouseException("Продукт c ID: " + idProduct + " не найден на складе.");
         }
     }
 }
