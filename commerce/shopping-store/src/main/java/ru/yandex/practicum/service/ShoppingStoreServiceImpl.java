@@ -14,7 +14,7 @@ import ru.yandex.practicum.exception.shoppingStore.ProductNotFoundException;
 import ru.yandex.practicum.interfaces.RepositoryShoppingStore;
 import ru.yandex.practicum.interfaces.ShoppingStoreService;
 import ru.yandex.practicum.mapper.ShoppingStoreMapper;
-import ru.yandex.practicum.model.ProductOfStore;
+import ru.yandex.practicum.model.Product;
 
 import java.util.UUID;
 
@@ -46,7 +46,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
             throw new IllegalArgumentException("Создание товара с установленным ID " + dto.getProductId() +
                     "не допускается.");
         }
-        ProductOfStore newProduct = repository.save(mapper.toProduct(dto));
+        Product newProduct = repository.save(mapper.toProduct(dto));
         log.info("Товар успешно добавлен. Товару присвоен ID: {}", newProduct.getProductId());
         return mapper.toDto(newProduct);
     }
@@ -54,7 +54,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     @Override
     @Transactional
     public ProductDto updateProduct(ProductDto productDto) {
-        ProductOfStore product = repository.findById(productDto.getProductId()).orElseThrow(NotFoundException::new);
+        Product product = repository.findById(productDto.getProductId()).orElseThrow(NotFoundException::new);
         mapper.updateProduct(productDto, product);
         log.info("Продукт с ID: {} успешно обновлен.", productDto.getProductId());
         return mapper.toDto(product);
@@ -89,7 +89,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     @Transactional(readOnly = true)
     public ProductDto getProductById(UUID productId) {
         log.info("Начата попытка получения продукта по ID {}", productId);
-        ProductOfStore product = repository.findById(productId).orElseThrow(NotFoundException::new);
+        Product product = repository.findById(productId).orElseThrow(NotFoundException::new);
         return mapper.toDto(product);
     }
 }

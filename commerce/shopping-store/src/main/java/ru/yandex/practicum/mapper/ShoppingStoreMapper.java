@@ -2,16 +2,16 @@ package ru.yandex.practicum.mapper;
 
 import org.mapstruct.*;
 import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
-import ru.yandex.practicum.model.ProductOfStore;
+import ru.yandex.practicum.model.Product;
 
 @Mapper(componentModel = "spring")
 public interface ShoppingStoreMapper {
 
-    ProductOfStore toProduct(ProductDto dto);
+    Product toProduct(ProductDto dto);
 
-    ProductDto toDto(ProductOfStore product);
+    ProductDto toDto(Product product);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "productId", ignore = true)
-    void updateProduct(ProductDto dto, @MappingTarget ProductOfStore product);
+    void updateProduct(ProductDto dto, @MappingTarget Product product);
 }
