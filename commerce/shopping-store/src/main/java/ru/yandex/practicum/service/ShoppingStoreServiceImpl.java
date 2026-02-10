@@ -75,7 +75,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
 
     @Override
     @Transactional
-    public boolean SettingTheStatus(SetProductQuantity setProductQuantity) {
+    public boolean settingTheStatus(SetProductQuantity setProductQuantity) {
         if (!repository.existsById(setProductQuantity.getProductId())) {
             throw new ProductNotFoundException("Не удалось изменить статут остатка продукта.");
         }
