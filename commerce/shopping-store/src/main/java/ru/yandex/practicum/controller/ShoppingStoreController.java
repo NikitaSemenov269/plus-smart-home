@@ -36,7 +36,7 @@ public class ShoppingStoreController {
 
     @GetMapping("/{productId}")
     @ResponseStatus(HttpStatus.OK)
-    public ProductDto getProductById(@RequestParam
+    public ProductDto getProductById(@PathVariable
                                      @NotNull(message = "ID продукта не может равняться null.") UUID productId) {
         log.info("GET. Получение продукта с ID: {}", productId);
         return service.getProductById(productId);

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.DTO.shoppingStore.SetProductQuantity;
 import ru.yandex.practicum.enums.shoppingStore.ProductCategory;
+import ru.yandex.practicum.enums.shoppingStore.ProductState;
 import ru.yandex.practicum.exception.shoppingStore.ProductNotFoundException;
 import ru.yandex.practicum.interfaces.RepositoryShoppingStore;
 import ru.yandex.practicum.interfaces.ShoppingStoreService;
@@ -63,13 +64,15 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     @Override
     @Transactional
     public Boolean deleteProductFromAssortment(UUID productId) {
-        // Отсутствие товара в БД не ведет к 404 и считается корректным случаем удаления товара.
-        if (!repository.existsById(productId)) {
-            log.info("Продукт с ID: {} не найден в базе данных.", productId);
-            return true;
-        }
-        repository.deactivateProduct(productId);
-        log.info("Продукт с ID: {} успешно удален из ассортимента.", productId);
+        log.debug("Удаление продукта с ID {}", productId);
+
+        Product product = repository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Продукт " + productId + " не найден"));
+
+        product.setProductState(ProductState.DEACTIVATE);
+        repository.save(product);
+
+        log.debug("Продукт с ID {} удален", productId);
         return true;
     }
 
@@ -81,6 +84,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
                 () -> new ProductNotFoundException("Не удалось изменить статут остатка продукта."));
 
         product.setQuantityState(setProductQuantity.getQuantityState());
+        repository.save(product);
 
         log.info("Статус остатка продукта ID {} успешно изменен на {}", setProductQuantity.getProductId(),
                 setProductQuantity.getQuantityState());
@@ -91,7 +95,9 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     @Transactional(readOnly = true)
     public ProductDto getProductById(UUID productId) {
         log.info("Начата попытка получения продукта по ID {}", productId);
-        Product product = repository.findById(productId).orElseThrow(NotFoundException::new);
+        Product product = repository.findById(productId).orElseThrow(
+                () -> new ProductNotFoundException("Продукт " + productId + " не найден"));
+
         return mapper.toDto(product);
     }
 }
