@@ -47,7 +47,7 @@ public class ShoppingStoreController {
     public Page<ProductDto> getProductsByCategory(
             @NotNull(message = "Категория продукта не может быть null.")
             @RequestParam ProductCategory category,
-            @PageableDefault(page = 0, size = 10, sort = "productName", direction = Sort.Direction.DESC)
+            @PageableDefault(page = 0, size = 20, sort = "productName", direction = Sort.Direction.DESC)
             Pageable pageable) {
         log.info("GET. Получение продуктов по категории: {}", category);
         return service.findAllByProductCategory(category, pageable);
@@ -70,9 +70,7 @@ public class ShoppingStoreController {
 
     @PostMapping("/quantityState")
     @ResponseStatus(HttpStatus.OK)
-    public boolean setQuantityState(
-            @RequestParam UUID productId,
-            @RequestParam QuantityState quantityState) {
+    public boolean setQuantityState(UUID productId, QuantityState quantityState) {
         log.info("POST. Обновление у позиции: {} поля остатков продукта: {}",
                 productId, quantityState);
         return service.settingTheStatus(SetProductQuantity.builder()

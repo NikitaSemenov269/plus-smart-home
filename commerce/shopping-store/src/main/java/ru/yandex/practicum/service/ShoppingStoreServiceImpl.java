@@ -62,7 +62,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
 
     @Override
     @Transactional
-    public boolean deleteProductFromAssortment(UUID productId) {
+    public Boolean deleteProductFromAssortment(UUID productId) {
         // Отсутствие товара в БД не ведет к 404 и считается корректным случаем удаления товара.
         if (!repository.existsById(productId)) {
             log.info("Продукт с ID: {} не найден в базе данных.", productId);
@@ -75,11 +75,13 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
 
     @Override
     @Transactional
-    public boolean settingTheStatus(SetProductQuantity setProductQuantity) {
-        if (!repository.existsById(setProductQuantity.getProductId())) {
-            throw new ProductNotFoundException("Не удалось изменить статут остатка продукта.");
-        }
-        repository.settingTheStatus(setProductQuantity.getProductId(), setProductQuantity.getQuantityState());
+    public Boolean settingTheStatus(SetProductQuantity setProductQuantity) {
+
+        Product product = repository.findById(setProductQuantity.getProductId()).orElseThrow(
+                () -> new ProductNotFoundException("Не удалось изменить статут остатка продукта."));
+
+        product.setQuantityState(setProductQuantity.getQuantityState());
+
         log.info("Статус остатка продукта ID {} успешно изменен на {}", setProductQuantity.getProductId(),
                 setProductQuantity.getQuantityState());
         return true;
