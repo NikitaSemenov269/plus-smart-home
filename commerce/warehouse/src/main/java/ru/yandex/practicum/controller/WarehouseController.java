@@ -37,7 +37,7 @@ public class WarehouseController {
 
     @PostMapping("/add")
     @ResponseStatus(HttpStatus.OK)
-    public void increaseProductQuantity(@Valid AddProductToWarehouseRequest request) {
+    public void increaseProductQuantity(@Valid @RequestBody AddProductToWarehouseRequest request) {
         log.debug("Пополнение запасов: {}", request);
         service.increaseProductQuantity(request);
     }

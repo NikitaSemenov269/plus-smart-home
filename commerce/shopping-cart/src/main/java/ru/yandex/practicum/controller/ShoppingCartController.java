@@ -33,7 +33,7 @@ public class ShoppingCartController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ShoppingCartDto getShoppingCartOfUser(@RequestParam
+    public ShoppingCartDto getShoppingCartOfUser(@PathVariable
                                                  @NotBlank(message = "Имя пользователя не может быть пустым," +
                                                          " или равняться null.") String username) {
         log.info("GET. Получение корзины пользователя с username: {}", username);
@@ -42,7 +42,7 @@ public class ShoppingCartController {
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.OK)
-    public void deactivatingTheShoppingCart(@RequestParam
+    public void deactivatingTheShoppingCart(@PathVariable
                                             @NotBlank(message = "Имя пользователя не может быть пустым," +
                                                     " или равняться null.") String username) {
         log.info("DELETE. Деактивация корзины пользователя с username: {}", username);
@@ -51,10 +51,10 @@ public class ShoppingCartController {
 
     @PostMapping("/remove")
     @ResponseStatus(HttpStatus.OK)
-    public ShoppingCartDto deleteItemsFromShoppingCart(@RequestParam
+    public ShoppingCartDto deleteItemsFromShoppingCart(@PathVariable
                                                        @NotBlank(message = "Имя пользователя не может быть пустым," +
                                                                " или равняться null.") String username,
-                                                       @RequestParam
+                                                       @PathVariable
                                                        @NotNull Set<UUID> productIds) {
         log.info("POST. Удаление товара из корзины пользователя: {}", username);
         return service.deleteItemsFromShoppingCart(username, productIds);
@@ -63,7 +63,7 @@ public class ShoppingCartController {
     @PostMapping("change-quantity")
     @ResponseStatus(HttpStatus.OK)
     public ShoppingCartDto changeNumberOfItemsInTheBasket(
-            @RequestParam
+            @PathVariable
             @NotBlank(message = "Имя пользователя не может быть пустым, или равняться null.") String username,
             @Valid @RequestBody ChangeProductQuantityRequest changeQuantity) {
         log.info("POST. Изменение количества товара в корзине пользователя: {}", username);

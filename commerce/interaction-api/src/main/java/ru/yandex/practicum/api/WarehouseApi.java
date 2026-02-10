@@ -18,7 +18,7 @@ public interface WarehouseApi {
     BookedProductsDto checkQuantityOfGoodsInStock(@RequestBody ShoppingCartDto shoppingCartDto);
 
     @PostMapping("/add")
-    void increaseProductQuantity(AddProductToWarehouseRequest request);
+    void increaseProductQuantity(@RequestBody AddProductToWarehouseRequest request);
 
     @GetMapping("/address")
     AddressDto getWarehouseAddress();

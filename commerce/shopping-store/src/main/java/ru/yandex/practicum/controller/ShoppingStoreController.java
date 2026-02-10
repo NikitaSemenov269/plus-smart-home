@@ -33,7 +33,7 @@ public class ShoppingStoreController {
 
     @GetMapping("/{productId}")
     @ResponseStatus(HttpStatus.OK)
-    public ProductDto getProductById(@RequestParam
+    public ProductDto getProductById(@PathVariable
                                      @NotNull(message = "ID продукта не может равняться null.") UUID productId) {
         log.info("GET. Получение продукта с ID: {}", productId);
         return service.getProductById(productId);
@@ -41,7 +41,7 @@ public class ShoppingStoreController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Page<ProductDto> getProductsByCategory(@RequestParam
+    public Page<ProductDto> getProductsByCategory(@PathVariable
                                                   @NotNull(message = "Категория продукта не может быть null.")
                                                   ProductCategory category,
                                                   Pageable pageable) {
