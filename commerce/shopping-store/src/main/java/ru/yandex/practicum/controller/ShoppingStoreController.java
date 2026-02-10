@@ -6,12 +6,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.DTO.shoppingStore.SetProductQuantity;
 import ru.yandex.practicum.enums.shoppingStore.ProductCategory;
+import ru.yandex.practicum.enums.shoppingStore.QuantityState;
 import ru.yandex.practicum.interfaces.ShoppingStoreService;
 
 import java.util.UUID;
@@ -41,10 +44,11 @@ public class ShoppingStoreController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Page<ProductDto> getProductsByCategory(@PathVariable
-                                                  @NotNull(message = "Категория продукта не может быть null.")
-                                                  ProductCategory category,
-                                                  Pageable pageable) {
+    public Page<ProductDto> getProductsByCategory(
+            @NotNull(message = "Категория продукта не может быть null.")
+            @RequestParam ProductCategory category,
+            @PageableDefault(page = 0, size = 20, sort = "productName", direction = Sort.Direction.DESC)
+            Pageable pageable) {
         log.info("GET. Получение продуктов по категории: {}", category);
         return service.findAllByProductCategory(category, pageable);
     }
@@ -66,10 +70,12 @@ public class ShoppingStoreController {
 
     @PostMapping("/quantityState")
     @ResponseStatus(HttpStatus.OK)
-    public boolean updateQuantityState(@Valid @RequestBody SetProductQuantity setProductQuantity) {
+    public boolean setQuantityState(UUID productId, QuantityState quantityState) {
         log.info("POST. Обновление у позиции: {} поля остатков продукта: {}",
-                setProductQuantity.getProductId(),
-                setProductQuantity.getQuantityState());
-        return service.SettingTheStatus(setProductQuantity);
+                productId, quantityState);
+        return service.settingTheStatus(SetProductQuantity.builder()
+                .productId(productId)
+                .quantityState(quantityState)
+                .build());
     }
 }

@@ -12,6 +12,7 @@ import ru.yandex.practicum.DTO.shoppingCart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
 import ru.yandex.practicum.interfaces.ShoppingCartService;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -25,15 +26,17 @@ public class ShoppingCartController {
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
-    public ShoppingCartDto addProductsAtShoppingCart(@NotBlank String username,
-                                                     @Valid @RequestBody ShoppingCartDto shoppingCartDto) {
+    public ShoppingCartDto addProductsAtShoppingCart(@RequestParam
+                                                     @NotBlank(message = "Имя пользователя не может быть пустым," +
+                                                             " или равняться null.") String username,
+                                                     @RequestBody(required = false) Map<UUID, Integer> products) {
         log.info("PUT. Добавление продукта в корзину");
-        return service.addProductsAtShoppingCart(username, shoppingCartDto);
+        return service.addProductsAtShoppingCart(username, products);
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ShoppingCartDto getShoppingCartOfUser(@PathVariable
+    public ShoppingCartDto getShoppingCartOfUser(@RequestParam
                                                  @NotBlank(message = "Имя пользователя не может быть пустым," +
                                                          " или равняться null.") String username) {
         log.info("GET. Получение корзины пользователя с username: {}", username);
@@ -42,7 +45,7 @@ public class ShoppingCartController {
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.OK)
-    public void deactivatingTheShoppingCart(@PathVariable
+    public void deactivatingTheShoppingCart(@RequestParam
                                             @NotBlank(message = "Имя пользователя не может быть пустым," +
                                                     " или равняться null.") String username) {
         log.info("DELETE. Деактивация корзины пользователя с username: {}", username);
@@ -51,10 +54,10 @@ public class ShoppingCartController {
 
     @PostMapping("/remove")
     @ResponseStatus(HttpStatus.OK)
-    public ShoppingCartDto deleteItemsFromShoppingCart(@PathVariable
+    public ShoppingCartDto deleteItemsFromShoppingCart(@RequestParam
                                                        @NotBlank(message = "Имя пользователя не может быть пустым," +
                                                                " или равняться null.") String username,
-                                                       @PathVariable
+                                                       @RequestParam
                                                        @NotNull Set<UUID> productIds) {
         log.info("POST. Удаление товара из корзины пользователя: {}", username);
         return service.deleteItemsFromShoppingCart(username, productIds);
@@ -63,7 +66,7 @@ public class ShoppingCartController {
     @PostMapping("change-quantity")
     @ResponseStatus(HttpStatus.OK)
     public ShoppingCartDto changeNumberOfItemsInTheBasket(
-            @PathVariable
+            @RequestParam
             @NotBlank(message = "Имя пользователя не может быть пустым, или равняться null.") String username,
             @Valid @RequestBody ChangeProductQuantityRequest changeQuantity) {
         log.info("POST. Изменение количества товара в корзине пользователя: {}", username);

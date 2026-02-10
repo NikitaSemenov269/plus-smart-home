@@ -1,7 +1,6 @@
 package ru.yandex.practicum.service;
 
 import feign.FeignException;
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ShoppingCartServiceImpl implements ShoppingCartService {
+class ShoppingCartServiceImpl implements ShoppingCartService {
 
     private final ShoppingCartRepository repository;
     private final ShoppingCartMapper mapper;
@@ -36,13 +35,16 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ShoppingCart createNewCart(String username, ShoppingCartDto shoppingCartDto) {
-        ShoppingCart shoppingCart = mapper.toCart(shoppingCartDto);
-        shoppingCart.setUsername(username); // Костыль для реализации логики ФЗ
+    public ShoppingCart createNewCart(String username, Map<UUID, Integer> newProducts) {
+        ShoppingCart shoppingCart = ShoppingCart.builder()
+                .username(username)
+                .products(newProducts)
+                .build();
+
+        repository.save(shoppingCart);
         log.info("Создана новая корзина с ID: {} для пользователя с именем: {}",
                 shoppingCart.getShoppingCartId(),
                 username);
-        repository.save(shoppingCart);
         return shoppingCart;
     }
 
@@ -61,45 +63,42 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ShoppingCartDto addProductsAtShoppingCart(String username, ShoppingCartDto shoppingCartDto) {
+    public ShoppingCartDto addProductsAtShoppingCart(String username, Map<UUID, Integer> products) {
         ShoppingCart shoppingCart;
         // Если у корзины, куда добавляются новые товары, нет id - создаем новую корзину.
-        if (shoppingCartDto.getShoppingCartId() == null) {
-            shoppingCart = createNewCart(username, shoppingCartDto);
-            // Иначе ищем корзину по id среди существующих в БД.
-        } else {
-            shoppingCart = repository.findById(shoppingCartDto.getShoppingCartId())
-                    .orElseThrow(() -> new NotFoundException("Корзина c ID " + shoppingCartDto.getShoppingCartId()
-                            + " не найдена"));
-            // Если найденная корзина имеет статус отличный от DEACTIVATE - добавляем в нее новые товары.
-            if (!CartState.DEACTIVATE.equals(shoppingCart.getCartState())) {
-                try {
-                    warehouseApi.checkQuantityOfGoodsInStock(shoppingCartDto);
-                } catch (FeignException e) {
-                    log.error("Warehouse check failed: {}", e.getMessage());
-                    log.error("Ошибка при проверке наличия товаров на складе: {}", e.getMessage());
+        try {
+            shoppingCart = findByUsernameOrElseThrow(username);
+        } catch (NotAuthorizedException e) {
+            shoppingCart = createNewCart(username, products);
+        }
+        // Если найденная корзина имеет статус отличный от DEACTIVATE - добавляем в нее новые товары.
+        if (!CartState.DEACTIVATE.equals(shoppingCart.getCartState())) {
+            ShoppingCartDto shoppingCartDto = mapper.toDto(shoppingCart);
+            try {
+                warehouseApi.checkQuantityOfGoodsInStock(shoppingCartDto);
+            } catch (FeignException e) {
+                log.error("Ошибка при проверке наличия товаров на складе: {}", e.getMessage());
 
-                    if (e.status() == 400) {
-                        throw new IllegalArgumentException("Товары недоступны в запрашиваемом количестве");
-                    }
-                    log.warn("Сервис склада временно недоступен. Товары добавлены в корзину без проверки.");
+                if (e.status() == 400) {
+                    throw new IllegalArgumentException("Товары недоступны в запрашиваемом количестве");
                 }
-                mapper.addOnlyNewProducts(shoppingCartDto, shoppingCart);
-                String idsList = shoppingCart.getProducts().keySet().stream()
-                        .map(UUID::toString)
-                        .collect(Collectors.joining(", "));
-
-                if (shoppingCart.getProducts().size() == 1) {
-                    log.info("Товар c ID {} успешно добавлен.",
-                            idsList);
-                } else {
-                    log.info("Товары c ID: {} успешно добавлены.",
-                            idsList);
-                }
-                // Если статус DEACTIVATE - выводим log и возвращаем корзину без изменений.
-            } else {
-                log.info(CART_IS_DEACTIVATE, shoppingCart.getShoppingCartId());
+                log.warn("Сервис склада временно недоступен. Товары добавлены в корзину без проверки.");
             }
+            mapper.addOnlyNewProducts(shoppingCartDto, shoppingCart);
+            String idsList = shoppingCart.getProducts().keySet().stream()
+                    .map(UUID::toString)
+                    .collect(Collectors.joining(", "));
+
+            if (shoppingCart.getProducts().size() == 1) {
+                log.info("Товар c ID {} успешно добавлен.",
+                        idsList);
+            } else {
+                log.info("Товары c ID: {} успешно добавлены.",
+                        idsList);
+            }
+            // Если статус DEACTIVATE - выводим log и возвращаем корзину без изменений.
+        } else {
+            log.info(CART_IS_DEACTIVATE, shoppingCart.getShoppingCartId());
         }
         return mapper.toDto(shoppingCart);
     }
