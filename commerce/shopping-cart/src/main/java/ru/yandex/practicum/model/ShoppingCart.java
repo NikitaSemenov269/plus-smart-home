@@ -20,7 +20,6 @@ public class ShoppingCart {
     @Column(name = "cart_id", updatable = false, nullable = false)
     private UUID shoppingCartId;
 
-    // Временный параметр
     @Column(name = "username", updatable = false, nullable = false)
     private String username;
 

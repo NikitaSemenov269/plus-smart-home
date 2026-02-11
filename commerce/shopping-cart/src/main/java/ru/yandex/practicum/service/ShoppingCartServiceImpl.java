@@ -33,21 +33,6 @@ class ShoppingCartServiceImpl implements ShoppingCartService {
     private static final String CART_IS_DEACTIVATE = "Корзина с ID {} находится в статусе 'DEACTIVATE'" +
             " в результате чего нельзя добавлять новые предметы.";
 
-    @Override
-    @Transactional
-    public ShoppingCart createNewCart(String username, Map<UUID, Integer> newProducts) {
-        ShoppingCart shoppingCart = ShoppingCart.builder()
-                .username(username)
-                .products(newProducts)
-                .build();
-
-        repository.save(shoppingCart);
-        log.info("Создана новая корзина с ID: {} для пользователя с именем: {}",
-                shoppingCart.getShoppingCartId(),
-                username);
-        return shoppingCart;
-    }
-
     // В будущем будет валидация пользователя
     @Override
     @Transactional(readOnly = true)
@@ -180,8 +165,17 @@ class ShoppingCartServiceImpl implements ShoppingCartService {
         return repository.findByUsername(username).orElseThrow(() ->
                 new NotAuthorizedException("Корзина пользователя " + username + " не найдена."));
     }
+
+    @Transactional
+    private ShoppingCart createNewCart(String username, Map<UUID, Integer> newProducts) {
+        ShoppingCart shoppingCart = ShoppingCart.builder()
+                .username(username)
+                .products(newProducts)
+                .build();
+
+        repository.save(shoppingCart);
+        log.info("Создана новая корзина с ID: {} для пользователя с именем: {}",
+                shoppingCart.getShoppingCartId(), username);
+        return shoppingCart;
+    }
 }
-
-
-
-
