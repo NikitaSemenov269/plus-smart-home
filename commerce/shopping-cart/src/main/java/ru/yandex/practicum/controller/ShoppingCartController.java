@@ -57,7 +57,7 @@ public class ShoppingCartController {
     public ShoppingCartDto deleteItemsFromShoppingCart(@RequestParam
                                                        @NotBlank(message = "Имя пользователя не может быть пустым," +
                                                                " или равняться null.") String username,
-                                                       @RequestParam
+                                                       @RequestBody
                                                        @NotNull Set<UUID> productIds) {
         log.info("POST. Удаление товара из корзины пользователя: {}", username);
         return service.deleteItemsFromShoppingCart(username, productIds);
