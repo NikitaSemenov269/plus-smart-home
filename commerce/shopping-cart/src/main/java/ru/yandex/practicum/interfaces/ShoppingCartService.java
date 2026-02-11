@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface ShoppingCartService {
-    ShoppingCart createNewCart(String username, Map<UUID, Integer> newProducts);
 
     ShoppingCartDto getShoppingCartOfUser(String username);
 
