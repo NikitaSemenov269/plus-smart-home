@@ -1,7 +1,6 @@
-package ru.yandex.practicum.DTO.warehouse;
+package ru.yandex.practicum.DTO.order;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,12 +9,14 @@ import lombok.Setter;
 import java.util.Map;
 import java.util.UUID;
 
-@Getter
 @Setter
-@NoArgsConstructor
+@Getter
 @AllArgsConstructor
-public class AddProductToWarehouseRequest {
+@NoArgsConstructor
+public class ProductReturnRequest {
     @NotNull
-    private Map<UUID, Long> products;
+    private UUID orderId;
+
+    Map<UUID, Integer> products;
 
 }
