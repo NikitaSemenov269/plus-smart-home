@@ -3,7 +3,6 @@ package ru.yandex.practicum.mapper;
 import org.mapstruct.*;
 import ru.yandex.practicum.DTO.order.CreateNewOrderRequest;
 import ru.yandex.practicum.DTO.order.OrderDto;
-import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.model.Order;
 
 @Mapper(componentModel = "spring")

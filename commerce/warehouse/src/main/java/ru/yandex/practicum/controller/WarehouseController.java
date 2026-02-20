@@ -11,7 +11,10 @@ import ru.yandex.practicum.DTO.warehouse.AddProductToWarehouseRequest;
 import ru.yandex.practicum.DTO.warehouse.AddressDto;
 import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
+import ru.yandex.practicum.enums.order.OrderState;
 import ru.yandex.practicum.interfaces.WarehouseService;
+
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,9 +40,10 @@ public class WarehouseController {
 
     @PostMapping("/add")
     @ResponseStatus(HttpStatus.OK)
-    public void increaseProductQuantity(@Valid @RequestBody AddProductToWarehouseRequest request) {
+    public void increaseProductQuantity(@Valid @RequestBody AddProductToWarehouseRequest request,
+                                        @RequestParam(required = false) OrderState state) {
         log.debug("Пополнение запасов: {}", request);
-        service.increaseProductQuantity(request);
+        service.updateProductQuantity(request, Optional.ofNullable(state));
     }
 
     @GetMapping("/address")

@@ -9,6 +9,7 @@ import ru.yandex.practicum.DTO.warehouse.AddProductToWarehouseRequest;
 import ru.yandex.practicum.DTO.warehouse.AddressDto;
 import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
+import ru.yandex.practicum.enums.order.OrderState;
 import ru.yandex.practicum.exception.warehouse.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exception.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
 import ru.yandex.practicum.exception.warehouse.SpecifiedProductAlreadyInWarehouseException;
@@ -108,13 +109,32 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .build();
     }
 
+
+    @Override
+    public void updateProductQuantity(AddProductToWarehouseRequest request) {
+        updateProductQuantity(request, Optional.empty());
+    }
+
+    // Перегрузка метода
     @Override
     @Transactional
-    public void increaseProductQuantity(AddProductToWarehouseRequest request) {
-        log.debug("Изменение остатков продукта {} на складе.", request);
-        validIdProduct(request.getProductId());
-        ProductOfWarehouse product = repository.getReferenceById(request.getProductId());
-        product.setQuantity(request.getQuantity());
+    public void updateProductQuantity(AddProductToWarehouseRequest request, Optional<OrderState> state) {
+        log.debug("Изменение остатков продуктов {} на складе.", request.toString());
+        Set<UUID> productIds = request.getProducts().keySet();
+
+        validIdsProduct(productIds);
+
+        List<ProductOfWarehouse> products = repository.findAllById(productIds);
+        repository.saveAll(products.stream()
+                .map(product -> {
+                    Long quantity = request.getProducts().get(product.getProductId());
+                    if (state.isPresent() && state.get() == OrderState.PRODUCT_RETURNED) {
+                        product.setQuantity(product.getQuantity() + quantity);
+                    } else {
+                        product.setQuantity(product.getQuantity() - quantity);
+                    }
+                    return product;
+                }).toList());
     }
 
     @Override
@@ -137,9 +157,18 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     @Transactional(readOnly = true)
-    private void validIdProduct(UUID idProduct) {
-        if (!repository.existsById(idProduct)) {
-            throw new NoSpecifiedProductInWarehouseException("Продукт c ID: " + idProduct + " не найден на складе.");
+    private void validIdsProduct(Set<UUID> idsProduct) {
+        if (idsProduct.isEmpty()) {
+            throw new NoSpecifiedProductInWarehouseException("Передана пустая коллекция.");
+        }
+        if (!repository.allProductsExist(idsProduct, idsProduct.size())) {
+            List<UUID> productIds = repository.findExistingIds(idsProduct);
+
+            Set<UUID> missingIds = idsProduct.stream()
+                    .filter(id -> !productIds.contains(id))
+                    .collect(Collectors.toSet());
+
+            throw new NoSpecifiedProductInWarehouseException("Товары не найдены на складе: " + missingIds);
         }
     }
 }

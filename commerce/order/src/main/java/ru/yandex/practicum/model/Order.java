@@ -36,7 +36,7 @@ public class Order {
     )
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
-    private Map<UUID, Integer> products;
+    private Map<UUID, Long> products;
 
     @Column(name = "payment_id")
     private UUID paymentId;

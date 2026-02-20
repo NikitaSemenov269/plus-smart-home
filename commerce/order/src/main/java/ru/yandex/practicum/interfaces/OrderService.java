@@ -6,7 +6,6 @@ import ru.yandex.practicum.DTO.order.CreateNewOrderRequest;
 import ru.yandex.practicum.DTO.order.OrderDto;
 import ru.yandex.practicum.DTO.order.ProductReturnRequest;
 
-import java.util.UUID;
 
 public interface OrderService {
 
