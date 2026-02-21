@@ -23,14 +23,14 @@ public class OrderDto {
 
     @Builder.Default
     private OrderState state = OrderState.NEW;
-
+    // заменить на DTO
     private Double deliveryWeight;
 
     private Double deliveryVolume;
 
     @Builder.Default
     private Boolean fragile = true;
-
+    // заменить на DTO
     private BigDecimal totalPrice;
 
     private BigDecimal deliveryPrice;

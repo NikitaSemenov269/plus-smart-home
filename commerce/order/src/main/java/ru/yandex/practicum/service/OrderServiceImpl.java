@@ -24,7 +24,6 @@ import ru.yandex.practicum.mapper.OrderMapper;
 import ru.yandex.practicum.model.Order;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -49,17 +48,16 @@ public class OrderServiceImpl implements OrderService {
         Order newOrder = mapper.toOrder(dto);
         // id корзины и список товаров получены при маппинге.
         // Статус заказа устанавливается дефолтно на NEW
-        Order.builder()
-                /*      .paymentId()
-                      .deliveryId()
-                    !_Получаем из DTO сервиса оплаты
-                      .totalPrice()
-                      .deliveryPrice()
-                      .productPrice()*/
-                .fragile(productsDto.getFragile())
-                .deliveryWeight(productsDto.getDeliveryWeight())
-                .deliveryVolume(productsDto.getDeliveryVolume())
-                .build();
+
+      /*  newOrder.setPaymentId();
+        newOrder.setDeliveryId();
+        !_Получаем из DTO сервиса оплаты
+        newOrder.setTotalPrice();
+        newOrder.setDeliveryPrice();
+        newOrder.setProductPrice();*/
+        newOrder.setFragile(productsDto.getFragile());
+        newOrder.setDeliveryWeight(productsDto.getDeliveryWeight());
+        newOrder.setDeliveryVolume(productsDto.getDeliveryVolume());
 
         repository.save(newOrder);
         log.info("FFFFFFFFFFFFFFFFFFFFFFFFF");
@@ -92,8 +90,8 @@ public class OrderServiceImpl implements OrderService {
         Map<UUID, Long> newOrder = new HashMap<>(order.getProducts());
 
         for (UUID key : productsReturn.keySet()) {
-            if (order.getProducts().get(key) < productsReturn.get(key)) {
-                failure.put(key, productsReturn.get(key) - order.getProducts().get(key));
+            if (newOrder.get(key) < productsReturn.get(key)) {
+                failure.put(key, productsReturn.get(key) - newOrder.get(key));
             } else if (failure.isEmpty()) {
                 newOrder.replace(key, order.getProducts().get(key) - productsReturn.get(key));
             }
@@ -105,14 +103,47 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setProducts(newOrder);
+        order.setState(OrderState.PRODUCT_RETURNED);
 
-        // Продукт возвращается на склад, поэтому проверка достаточности не требуется.
-        warehouseApi.increaseProductQuantity(AddProductToWarehouseRequest.builder()
-                        .products(productsReturn).build(),
+
+        warehouseApi.increaseProductQuantity(AddProductToWarehouseRequest.builder().products(productsReturn).build(),
                 OrderState.PRODUCT_RETURNED);
+
+        // Перерасчет стоимости заказа и доставки !
+        // Перерасчет условий доставки
 
         return mapper.toDto(order);
     }
 
+    /*
+     * Метод для вызова эндпоинтов:
+     * /api/v1/order/payment
+     * /api/v1/order/payment/failed
+     * /api/v1/order/payment/failed
+     * и т.п.
+     */
+    @Override
+    @Transactional
+    public OrderDto setOrderState(UUID orderId, OrderState state) {
+        Order order = repository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Не найден заказ с id: " + orderId));
 
+        switch (state) {
+            case OrderState.NEW -> order.setState(OrderState.NEW);
+            case OrderState.PRODUCT_RETURNED -> order.setState(OrderState.PRODUCT_RETURNED);
+            case OrderState.PAID -> order.setState(OrderState.PAID);
+            case OrderState.PAYMENT_FAILED -> order.setState(OrderState.PAYMENT_FAILED);
+            case OrderState.DELIVERED -> order.setState(OrderState.DELIVERED);
+            case OrderState.ASSEMBLED -> order.setState(OrderState.ASSEMBLED);
+            case OrderState.DELIVERY_FAILED -> order.setState(OrderState.DELIVERY_FAILED);
+            case OrderState.ASSEMBLY_FAILED -> order.setState(OrderState.ASSEMBLY_FAILED);
+            case OrderState.CANCELED -> order.setState(OrderState.CANCELED);
+            case OrderState.COMPLETED -> order.setState(OrderState.COMPLETED);
+            case OrderState.DONE -> order.setState(OrderState.DONE);
+            case OrderState.ON_DELIVERY -> order.setState(OrderState.ON_DELIVERY);
+            case OrderState.ON_PAYMENT -> order.setState(OrderState.ON_PAYMENT);
+        }
+
+        return mapper.toDto(order);
+    }
 }

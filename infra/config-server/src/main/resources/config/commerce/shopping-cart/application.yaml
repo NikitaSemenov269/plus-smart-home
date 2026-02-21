@@ -21,7 +21,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5433/hub_router
     username: postgres
-    password: postgres
+    password: 9UQ8K6o8rj
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 30000

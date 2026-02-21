@@ -148,16 +148,8 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .build();
     }
 
-    private BookedProductsDto emptyCart() {
-        return BookedProductsDto.builder()
-                .deliveryWeight(0.0)
-                .deliveryVolume(0.0)
-                .fragile(false)
-                .build();
-    }
-
     @Transactional(readOnly = true)
-    private void validIdsProduct(Set<UUID> idsProduct) {
+    public void validIdsProduct(Set<UUID> idsProduct) {
         if (idsProduct.isEmpty()) {
             throw new NoSpecifiedProductInWarehouseException("Передана пустая коллекция.");
         }
@@ -170,5 +162,13 @@ public class WarehouseServiceImpl implements WarehouseService {
 
             throw new NoSpecifiedProductInWarehouseException("Товары не найдены на складе: " + missingIds);
         }
+    }
+
+    private BookedProductsDto emptyCart() {
+        return BookedProductsDto.builder()
+                .deliveryWeight(0.0)
+                .deliveryVolume(0.0)
+                .fragile(false)
+                .build();
     }
 }

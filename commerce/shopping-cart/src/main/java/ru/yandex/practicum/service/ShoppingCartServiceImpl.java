@@ -160,14 +160,14 @@ class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Transactional(readOnly = true)
-    private ShoppingCart findByUsernameOrElseThrow(String username) {
+    public ShoppingCart findByUsernameOrElseThrow(String username) {
         log.info("Попытка получить корзину пользователя.");
         return repository.findByUsername(username).orElseThrow(() ->
                 new NotAuthorizedException("Корзина пользователя " + username + " не найдена."));
     }
 
     @Transactional
-    private ShoppingCart createNewCart(String username, Map<UUID, Integer> newProducts) {
+    public ShoppingCart createNewCart(String username, Map<UUID, Integer> newProducts) {
         ShoppingCart shoppingCart = ShoppingCart.builder()
                 .username(username)
                 .products(newProducts)
