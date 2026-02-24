@@ -17,6 +17,8 @@ import ru.yandex.practicum.enums.shoppingStore.ProductCategory;
 import ru.yandex.practicum.enums.shoppingStore.QuantityState;
 import ru.yandex.practicum.interfaces.ShoppingStoreService;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -51,6 +53,14 @@ public class ShoppingStoreController {
             Pageable pageable) {
         log.info("GET. Получение продуктов по категории: {}", category);
         return service.findAllByProductCategory(category, pageable);
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public List<ProductDto> getProductsByIds(@NotNull
+                                             @RequestBody Set<UUID> productsId) {
+        log.info("GET. Получение продуктов по ID: {}", productsId);
+        return service.getProductsByIds(productsId);
     }
 
     @PostMapping

@@ -1,7 +1,5 @@
 package ru.yandex.practicum.DTO.shoppingCart;
 
-import jakarta.persistence.Embeddable;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 

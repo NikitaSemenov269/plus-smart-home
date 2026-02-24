@@ -1,5 +1,6 @@
 package ru.yandex.practicum.api;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,8 @@ import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.DTO.shoppingStore.SetProductQuantity;
 import ru.yandex.practicum.enums.shoppingStore.ProductCategory;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @FeignClient(name = "shopping-store", path = "/api/v1/shopping-store")
@@ -21,6 +24,9 @@ public interface ShoppingStoreApi {
 
     @GetMapping
     Page<ProductDto> getProductsByCategory(@RequestParam ProductCategory category, Pageable pageable);
+
+    @GetMapping
+    List<ProductDto> getProductsByIds(@RequestBody Set<UUID> productsId);
 
     @PostMapping
     ProductDto updateProduct(@RequestBody ProductDto productDto);

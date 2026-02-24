@@ -22,8 +22,8 @@ public class Order {
     @Column(name = "order_id", nullable = false, updatable = false)
     private UUID orderId;
 
-    /*@Column(name = "username", updatable = false, nullable = false)
-    private String username;*/
+    @Column(name = "username", updatable = false, nullable = false)
+    private String username;
 
     @Column(name = "cart_id", nullable = false)
     private UUID shoppingCartId;
@@ -36,7 +36,7 @@ public class Order {
     )
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
-    private Map<UUID, Long> products;
+    private Map<UUID, Integer> products;
 
     @Column(name = "payment_id")
     private UUID paymentId;

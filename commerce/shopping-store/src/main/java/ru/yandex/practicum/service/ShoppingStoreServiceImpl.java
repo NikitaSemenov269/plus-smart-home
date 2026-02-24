@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.DTO.shoppingStore.OrderPaymentRequest;
 import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.DTO.shoppingStore.SetProductQuantity;
 import ru.yandex.practicum.enums.shoppingStore.ProductCategory;
@@ -17,7 +18,8 @@ import ru.yandex.practicum.interfaces.ShoppingStoreService;
 import ru.yandex.practicum.mapper.ShoppingStoreMapper;
 import ru.yandex.practicum.model.Product;
 
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -99,5 +101,24 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
                 () -> new ProductNotFoundException("Продукт " + productId + " не найден"));
 
         return mapper.toDto(product);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductDto> getProductsByIds(Set<UUID> productsId) {
+        if (productsId.isEmpty()) {
+            log.info("");
+            return List.of();
+        }
+        log.info("Начата попытка получения продуктов по ID {}", productsId);
+        List<Product> products = repository.findAllById(productsId);
+
+        if (products.size() != productsId.size()) {
+            Set<UUID> foundIds = products.stream().map(Product::getProductId).collect(Collectors.toSet());
+            productsId.stream().filter(id -> !foundIds.contains(id)).forEach(id ->
+                    log.warn("Продукт с ID: {} не найден.", id)
+            );
+        }
+        return products.stream().map(mapper::toDto).toList();
     }
 }

@@ -14,10 +14,12 @@ public interface OrderService {
 
     OrderDto createNewOrder(CreateNewOrderRequest dto);
 
+    OrderDto payForTheOrder(UUID orderId);
+
     Page<OrderDto> getOrdersOfUser(String username, Pageable pageable);
 
     OrderDto orderRefund(ProductReturnRequest productReturnRequest);
 
-    public OrderDto setOrderState(UUID orderId, OrderState state);
+    OrderDto setOrderState(UUID orderId, OrderState state);
 }
 

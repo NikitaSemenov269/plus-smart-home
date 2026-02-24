@@ -9,12 +9,16 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.DTO.order.CreateNewOrderRequest;
 import ru.yandex.practicum.DTO.order.OrderDto;
 import ru.yandex.practicum.DTO.order.ProductReturnRequest;
+import ru.yandex.practicum.DTO.shoppingStore.OrderPaymentRequest;
+import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.DTO.warehouse.AddProductToWarehouseRequest;
 import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.api.ShoppingCartApi;
 import ru.yandex.practicum.api.ShoppingStoreApi;
 import ru.yandex.practicum.api.WarehouseApi;
 import ru.yandex.practicum.enums.order.OrderState;
+
+import ru.yandex.practicum.exception.order.BadOrderStateException;
 import ru.yandex.practicum.exception.order.IncorrectNumberOfReturnedItemsException;
 import ru.yandex.practicum.exception.order.OrderNotFoundException;
 import ru.yandex.practicum.exception.shoppingStore.ProductNotFoundException;
@@ -23,9 +27,7 @@ import ru.yandex.practicum.interfaces.OrderService;
 import ru.yandex.practicum.mapper.OrderMapper;
 import ru.yandex.practicum.model.Order;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -43,21 +45,15 @@ public class OrderServiceImpl implements OrderService {
         log.info("FFFFFFFFFFFFFFFFFFFFFFFFF");
         BookedProductsDto productsDto = warehouseApi.checkQuantityOfGoodsInStock(dto.getShoppingCart());
 
-        // Dto сервиса оплаты со всеми вытекающими исключениями и проверками
+        // Внедрить проверку статуса заказа и корзины на стороне их сервисов (добавить методы возвращающие статус)
 
         Order newOrder = mapper.toOrder(dto);
-        // id корзины и список товаров получены при маппинге.
         // Статус заказа устанавливается дефолтно на NEW
 
-      /*  newOrder.setPaymentId();
-        newOrder.setDeliveryId();
-        !_Получаем из DTO сервиса оплаты
-        newOrder.setTotalPrice();
-        newOrder.setDeliveryPrice();
-        newOrder.setProductPrice();*/
         newOrder.setFragile(productsDto.getFragile());
         newOrder.setDeliveryWeight(productsDto.getDeliveryWeight());
         newOrder.setDeliveryVolume(productsDto.getDeliveryVolume());
+        newOrder.setState(OrderState.ON_PAYMENT);
 
         repository.save(newOrder);
         log.info("FFFFFFFFFFFFFFFFFFFFFFFFF");
@@ -75,6 +71,41 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    public OrderDto payForTheOrder(UUID orderId) {
+
+        Order order = repository.findById(orderId).orElseThrow(
+                () -> new OrderNotFoundException(""));
+
+        if (!order.getState().equals(OrderState.ON_PAYMENT)) {
+            log.info("Статус заказа не соответствует ожидаемому. State: {}", order.getState());
+            throw new BadOrderStateException("");
+        }
+
+        List<ProductDto> products = shoppingStoreApi.getProductsByIds(order.getProducts().keySet());
+        Map<UUID, Integer> quantityMap = order.getProducts();
+
+        List<OrderPaymentRequest> paymentRequests = products.stream()
+                .map(product -> OrderPaymentRequest.builder()
+                        .productId(product.getProductId())
+                        .price(product.getPrice())
+                        .quantity(quantityMap.get(product.getProductId()))
+                        .build()).toList();
+
+        // сервис оплаты.enrichOrderWithPayment(order.getOrderId, paymentRequests);
+
+        // Dto сервиса оплаты со всеми вытекающими исключениями и проверками
+
+         /*
+        order.setPaymentId();
+        order.setTotalPrice();
+        order.setProductPrice();
+        */
+
+        return mapper.toDto(order);
+    }
+
+    @Override
+    @Transactional
     public OrderDto orderRefund(ProductReturnRequest productReturnRequest) {
         Map<UUID, Long> productsReturn = productReturnRequest.getProducts();
 
@@ -86,14 +117,14 @@ public class OrderServiceImpl implements OrderService {
                 () -> new OrderNotFoundException("FFFFFF")
         );
 
-        Map<UUID, Long> failure = new HashMap<>();
-        Map<UUID, Long> newOrder = new HashMap<>(order.getProducts());
+        Map<UUID, Integer> failure = new HashMap<>();
+        HashMap<UUID, Integer> newOrder = new HashMap<>(order.getProducts());
 
         for (UUID key : productsReturn.keySet()) {
             if (newOrder.get(key) < productsReturn.get(key)) {
-                failure.put(key, productsReturn.get(key) - newOrder.get(key));
+                failure.put(key, Math.toIntExact(productsReturn.get(key) - newOrder.get(key)));
             } else if (failure.isEmpty()) {
-                newOrder.replace(key, order.getProducts().get(key) - productsReturn.get(key));
+                newOrder.replace(key, Math.toIntExact(order.getProducts().get(key) - productsReturn.get(key)));
             }
         }
 
