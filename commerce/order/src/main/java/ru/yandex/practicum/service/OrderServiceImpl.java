@@ -46,9 +46,9 @@ public class OrderServiceImpl implements OrderService {
         BookedProductsDto productsDto = warehouseApi.checkQuantityOfGoodsInStock(dto.getShoppingCart());
 
         // Внедрить проверку статуса заказа и корзины на стороне их сервисов (добавить методы возвращающие статус)
-
-        Order newOrder = mapper.toOrder(dto);
         // Статус заказа устанавливается дефолтно на NEW
+        Order newOrder = mapper.toOrder(dto);
+
 
         newOrder.setFragile(productsDto.getFragile());
         newOrder.setDeliveryWeight(productsDto.getDeliveryWeight());
@@ -135,7 +135,6 @@ public class OrderServiceImpl implements OrderService {
 
         order.setProducts(newOrder);
         order.setState(OrderState.PRODUCT_RETURNED);
-
 
         warehouseApi.increaseProductQuantity(AddProductToWarehouseRequest.builder().products(productsReturn).build(),
                 OrderState.PRODUCT_RETURNED);

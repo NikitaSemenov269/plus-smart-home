@@ -13,8 +13,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class PaymentDto {
-    @NotNull
+
     private UUID paymentId;
+
+    private UUID orderId;
+
+    @NotNull
+    @Min(0)
+    private BigDecimal productsPrice;
 
     @NotNull
     @Min(0)
