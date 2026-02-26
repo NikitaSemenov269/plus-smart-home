@@ -92,13 +92,14 @@ public class OrderServiceImpl implements OrderService {
                         .build()).toList();
 
         // сервис оплаты.enrichOrderWithPayment(order.getOrderId, paymentRequests);
-
+        // сервис доставки
         // Dto сервиса оплаты со всеми вытекающими исключениями и проверками
 
          /*
         order.setPaymentId();
         order.setTotalPrice();
         order.setProductPrice();
+        order.setDeliveryPrice();
         */
 
         return mapper.toDto(order);
@@ -174,6 +175,7 @@ public class OrderServiceImpl implements OrderService {
             case OrderState.ON_PAYMENT -> order.setState(OrderState.ON_PAYMENT);
         }
 
+        repository.save(order);
         return mapper.toDto(order);
     }
 }
