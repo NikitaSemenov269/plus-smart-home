@@ -52,15 +52,24 @@ public class DeliveryServiceImpl implements DeliveryInterface {
 
     @Override
     @Transactional
-    public DeliveryResponse payToDelivery(UUID deliveryId) {
-        Delivery delivery = repository.findById(deliveryId)
-                .orElseThrow(() -> new NotFoundException("Доставка не найдена: " + deliveryId));
+    public void payToDelivery(UUID deliveryId) {
+        Delivery delivery = searchDelivery(deliveryId);
 
         if (!delivery.getDeliveryState().equals(DeliveryState.CREATED)) {
             log.info("Доставка {} уже обработана, текущий статус: {}", deliveryId, delivery.getDeliveryState());
-            return mapper.toDtoResponse(delivery);
         }
 
+        delivery.setShippingCost(calculateDelivery(delivery));
+        delivery.setDeliveryState(DeliveryState.IN_PROGRESS);
+    }
+
+    @Override
+    public BigDecimal calculateDelivery(UUID deliveryId) {
+        return calculateDelivery(searchDelivery(deliveryId));
+    }
+
+    @Override
+    public BigDecimal calculateDelivery(Delivery delivery) {
         BigDecimal shippingCost = BASE_RATE;
 
         String warehouseStreet = delivery.getAddressOfWarehouse().getStreet();
@@ -98,32 +107,44 @@ public class DeliveryServiceImpl implements DeliveryInterface {
             shippingCost = shippingCost.add(shippingCost.multiply(STREET_MISMATCH));
         }
 
-        shippingCost = shippingCost.setScale(2, RoundingMode.HALF_UP);
-
-        delivery.setShippingCost(shippingCost);
-        delivery.setDeliveryState(DeliveryState.IN_PROGRESS);
-
-        return mapper.toDtoResponse(delivery);
+        return shippingCost.setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override
     @Transactional
+    // Мне не сильно нравится такой подход, но ничего лучше не придумал.
     public DeliveryResponse setDeliveryState(UUID deliveryId, DeliveryState state) {
-        Delivery delivery = repository.findById(deliveryId)
-                .orElseThrow(() -> new NotFoundException("Не найден запрос на доставку с id: " + deliveryId));
-
+        Delivery delivery = searchDelivery(deliveryId);
         switch (state) {
-            case DeliveryState.CREATED -> delivery.setDeliveryState(DeliveryState.CREATED);
+            case DeliveryState.CREATED -> {
+                delivery.setDeliveryState(DeliveryState.CREATED);
+                orderApi.setOrderState(delivery.getOrderId(), OrderState.ON_DELIVERY);
+            }
             case DeliveryState.IN_PROGRESS -> {
                 delivery.setDeliveryState(DeliveryState.IN_PROGRESS);
                 orderApi.setOrderState(delivery.getOrderId(), OrderState.ASSEMBLED);
             }
-            case DeliveryState.DELIVERED -> delivery.setDeliveryState(DeliveryState.DELIVERED);
-            case DeliveryState.FAILED -> delivery.setDeliveryState(DeliveryState.FAILED);
-            case DeliveryState.CANCELLED -> delivery.setDeliveryState(DeliveryState.CANCELLED);
+            case DeliveryState.DELIVERED -> {
+                delivery.setDeliveryState(DeliveryState.DELIVERED);
+                orderApi.setOrderState(delivery.getOrderId(), OrderState.COMPLETED);
+            }
+            case DeliveryState.FAILED -> {
+                delivery.setDeliveryState(DeliveryState.FAILED);
+                orderApi.setOrderState(delivery.getOrderId(), OrderState.DELIVERY_FAILED);
+            }
+            case DeliveryState.CANCELLED -> {
+                delivery.setDeliveryState(DeliveryState.CANCELLED);
+                orderApi.setOrderState(delivery.getOrderId(), OrderState.DELIVERY_FAILED);
+            }
         }
 
         repository.save(delivery);
         return mapper.toDtoResponse(delivery);
+    }
+
+    @Transactional(readOnly = true)
+    private Delivery searchDelivery(UUID deliveryId) {
+        return repository.findById(deliveryId)
+                .orElseThrow(() -> new NotFoundException("Доставка не найдена: " + deliveryId));
     }
 }
