@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.DTO.payment.PaymentDto;
 import ru.yandex.practicum.DTO.shoppingStore.OrderPaymentRequest;
+import ru.yandex.practicum.api.OrderApi;
+import ru.yandex.practicum.enums.order.OrderState;
 import ru.yandex.practicum.enums.payment.PaymentState;
 import ru.yandex.practicum.interfaces.PaymentInterface;
 import ru.yandex.practicum.interfaces.PaymentRepository;
@@ -25,6 +27,7 @@ import java.util.UUID;
 public class PaymentServiceImpl implements PaymentInterface {
     private final PaymentRepository repository;
     private final PaymentMapper mapper;
+    private final OrderApi orderApi;
 
     @Override
     @Transactional
@@ -52,8 +55,14 @@ public class PaymentServiceImpl implements PaymentInterface {
                 () -> new NoSuchElementException(""));
         switch (state) {
             case PaymentState.PENDING -> payment.setState(PaymentState.PENDING);
-            case PaymentState.SUCCESS -> payment.setState(PaymentState.SUCCESS);
-            case PaymentState.FAILED -> payment.setState(PaymentState.FAILED);
+            case PaymentState.SUCCESS -> {
+                payment.setState(PaymentState.SUCCESS);
+                setOrderState(payment.getOrderId(), OrderState.PAID);
+            }
+            case PaymentState.FAILED -> {
+                payment.setState(PaymentState.FAILED);
+                setOrderState(payment.getOrderId(), OrderState.PAYMENT_FAILED);
+            }
         }
 
         repository.save(payment);

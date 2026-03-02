@@ -26,6 +26,7 @@ public class DeliveryController implements DeliveryApi {
 
     @Override
     @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/create")
     public DeliveryResponse createDelivery(@RequestBody @Valid
                                            DeliveryRequest request) {
         log.info("Запрос на создание доставки для заказа: {}", request.getOrderId());
