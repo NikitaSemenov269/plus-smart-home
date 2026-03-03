@@ -21,7 +21,8 @@ public interface OrderApi {
 
     @GetMapping
     Page<OrderDto> getOrdersOfUser(@RequestParam String username,
-                                   @PageableDefault(size = 20, page = 0) Pageable pageable);
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "20") int size);
 
     @PostMapping("/payment")
     void payForTheOrder(UUID orderId);
