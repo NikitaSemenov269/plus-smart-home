@@ -11,7 +11,9 @@ import java.util.UUID;
 public interface PaymentInterface {
     PaymentDto enrichOrderWithPayment(UUID orderId, List<OrderPaymentRequest> paymentRequests);
 
-    PaymentDto setPaymentState(UUID paymentId, PaymentState state);
+    void setPaymentState(UUID paymentId, PaymentState state);
 
-    BigDecimal getTax(BigDecimal sumOfPrice);
+    BigDecimal calculateProductPrice(List<OrderPaymentRequest> paymentRequests);
+
+    BigDecimal calculateTotalPrice(BigDecimal sumOfPrice);
 }

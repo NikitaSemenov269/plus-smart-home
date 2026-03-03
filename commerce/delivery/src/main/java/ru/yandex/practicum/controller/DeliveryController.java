@@ -26,7 +26,6 @@ public class DeliveryController implements DeliveryApi {
 
     @Override
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/create")
     public DeliveryResponse createDelivery(@RequestBody @Valid
                                            DeliveryRequest request) {
         log.info("Запрос на создание доставки для заказа: {}", request.getOrderId());
@@ -35,7 +34,6 @@ public class DeliveryController implements DeliveryApi {
 
     @Override
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/cost")
     public BigDecimal calculateDelivery(@RequestParam @NotNull UUID deliveryId) {
         log.info("Запрос на расчет стоимости доставки для заказа: {}", deliveryId);
         return delivery.calculateDelivery(deliveryId);
@@ -43,7 +41,6 @@ public class DeliveryController implements DeliveryApi {
 
     @Override
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/successful")
     public void setDeliverySuccessful(@RequestParam @NotNull UUID deliveryId) {
         log.info("Запрос на изменение статуса \"успешная доставка\": {}", deliveryId);
         delivery.setDeliveryState(deliveryId, DeliveryState.DELIVERED);
@@ -51,7 +48,6 @@ public class DeliveryController implements DeliveryApi {
 
     @Override
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/failed")
     public void setDeliveryFailed(@RequestParam @NotNull UUID deliveryId) {
         log.info("Запрос на изменение статуса \"не успешная доставка\": {}", deliveryId);
         delivery.setDeliveryState(deliveryId, DeliveryState.FAILED);
@@ -59,7 +55,6 @@ public class DeliveryController implements DeliveryApi {
 
     @Override
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/pay")
     public void payToDelivery(@RequestParam @NotNull UUID deliveryId) {
         log.info("Запрос на оплату доставки: {}", deliveryId);
         delivery.payToDelivery(deliveryId);

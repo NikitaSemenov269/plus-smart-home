@@ -14,7 +14,7 @@ public interface OrderService {
 
     OrderDto createNewOrder(CreateNewOrderRequest dto);
 
-    OrderDto payForTheOrder(UUID orderId);
+    void payForTheOrder(UUID orderId);
 
     Page<OrderDto> getOrdersOfUser(String username, Pageable pageable);
 

@@ -21,5 +21,5 @@ public class OrderPaymentRequest {
 
     @Min(0)
     @Builder.Default
-    private Integer quantity = 0;
+    private Long quantity = 0L;
 }

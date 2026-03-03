@@ -11,7 +11,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddProductToWarehouseRequest {
+public class ChangeQuantityOfProductToWarehouse {
     @NotNull
     private Map<UUID, Long> products;
 

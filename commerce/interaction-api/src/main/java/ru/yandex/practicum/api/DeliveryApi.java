@@ -13,16 +13,16 @@ import java.util.UUID;
 
 @FeignClient(name = "delivery", path = "/api/v1/delivery")
 public interface DeliveryApi {
-    @PutMapping
+    @PostMapping
     DeliveryResponse createDelivery(@RequestBody DeliveryRequest request);
 
     @PostMapping("/cost")
     BigDecimal calculateDelivery(@RequestParam UUID deliveryId);
 
-    @PostMapping("/successful")
+    @PutMapping("/successful")
     void setDeliverySuccessful(@RequestParam  UUID deliveryId);
 
-    @PostMapping("/failed")
+    @PutMapping("/failed")
     void setDeliveryFailed(@RequestParam  UUID deliveryId);
 
     @PostMapping("/pay")

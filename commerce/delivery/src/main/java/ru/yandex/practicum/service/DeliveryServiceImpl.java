@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.exception.delivery.BadDeliveryStateException;
 import ru.yandex.practicum.DTO.delivery.DeliveryRequest;
 import ru.yandex.practicum.DTO.delivery.DeliveryResponse;
 import ru.yandex.practicum.api.OrderApi;
@@ -45,6 +46,7 @@ public class DeliveryServiceImpl implements DeliveryInterface {
         }
 
         Delivery delivery = mapper.toEntity(dto);
+        delivery.setShippingCost(calculateDelivery(delivery));
 
         repository.save(delivery);
         return mapper.toDtoResponse(delivery);
@@ -58,8 +60,10 @@ public class DeliveryServiceImpl implements DeliveryInterface {
         if (!delivery.getDeliveryState().equals(DeliveryState.CREATED)) {
             log.info("Доставка {} уже обработана, текущий статус: {}", deliveryId, delivery.getDeliveryState());
         }
-
-        delivery.setShippingCost(calculateDelivery(delivery));
+        if (DeliveryState.FAILED.equals(delivery.getDeliveryState()) ||
+                DeliveryState.CANCELLED.equals(delivery.getDeliveryState())) {
+            throw new BadDeliveryStateException("FFFFFFFFFFFFFFFFFF");
+        }
         delivery.setDeliveryState(DeliveryState.IN_PROGRESS);
     }
 

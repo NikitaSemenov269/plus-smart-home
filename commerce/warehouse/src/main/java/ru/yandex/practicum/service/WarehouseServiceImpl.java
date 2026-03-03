@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.DTO.warehouse.AddProductToWarehouseRequest;
+import ru.yandex.practicum.DTO.warehouse.ChangeQuantityOfProductToWarehouse;
 import ru.yandex.practicum.DTO.warehouse.AddressDto;
 import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
@@ -55,7 +55,7 @@ public class WarehouseServiceImpl implements WarehouseService {
             return emptyCart();
         }
 
-        Map<UUID, Integer> requestedProducts = shoppingCartDto.getProducts();
+        Map<UUID, Long> requestedProducts = shoppingCartDto.getProducts();
         List<ProductOfWarehouse> products = repository.findAllById(requestedProducts.keySet());
 
         if (products.size() < requestedProducts.size()) {
@@ -69,12 +69,11 @@ public class WarehouseServiceImpl implements WarehouseService {
             throw new NoSpecifiedProductInWarehouseException("Товары не найдены на складе: " + missingIds);
         }
 
-        Map<UUID, Integer> insufficientProducts = new HashMap<>();
+        Map<UUID, Integer> insufficientProducts = new HashMap<>(); // Коллекция для количества отсутствующих позиций.
         List<ProductOfWarehouse> verifiedProducts = new ArrayList<>();
 
         for (ProductOfWarehouse product : products) {
-            Integer requestedQty = requestedProducts.get(product.getProductId());
-
+            Integer requestedQty = Math.toIntExact(requestedProducts.get(product.getProductId()));
             if (product.getQuantity() >= requestedQty) {
                 verifiedProducts.add(product);
             } else {
@@ -109,16 +108,9 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .build();
     }
 
-
-    @Override
-    public void updateProductQuantity(AddProductToWarehouseRequest request) {
-        updateProductQuantity(request, Optional.empty());
-    }
-
-    // Перегрузка метода
     @Override
     @Transactional
-    public void updateProductQuantity(AddProductToWarehouseRequest request, Optional<OrderState> state) {
+    public void updateProductQuantity(ChangeQuantityOfProductToWarehouse request, OrderState state) {
         log.debug("Изменение остатков продуктов {} на складе.", request.toString());
         Set<UUID> productIds = request.getProducts().keySet();
 
@@ -128,7 +120,7 @@ public class WarehouseServiceImpl implements WarehouseService {
         repository.saveAll(products.stream()
                 .map(product -> {
                     Long quantity = request.getProducts().get(product.getProductId());
-                    if (state.isPresent() && state.get() == OrderState.PRODUCT_RETURNED) {
+                    if (OrderState.PRODUCT_RETURNED.equals(state)) {
                         product.setQuantity(product.getQuantity() + quantity);
                     } else {
                         product.setQuantity(product.getQuantity() - quantity);

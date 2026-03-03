@@ -14,5 +14,5 @@ import java.util.UUID;
 public class ShoppingCartDto {
     private UUID shoppingCartId;
     @NotNull
-    private Map<UUID, Integer> products;
+    private Map<UUID, Long> products;
 }

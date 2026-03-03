@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeliveryResponse {
-
+    @NotNull
     private UUID deliveryId;
 
     @NotNull

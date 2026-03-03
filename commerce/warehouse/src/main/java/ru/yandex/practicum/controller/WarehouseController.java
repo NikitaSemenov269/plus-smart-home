@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.DTO.warehouse.AddProductToWarehouseRequest;
+import ru.yandex.practicum.DTO.warehouse.ChangeQuantityOfProductToWarehouse;
 import ru.yandex.practicum.DTO.warehouse.AddressDto;
 import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
@@ -40,10 +40,10 @@ public class WarehouseController {
 
     @PostMapping("/add")
     @ResponseStatus(HttpStatus.OK)
-    public void increaseProductQuantity(@Valid @RequestBody AddProductToWarehouseRequest request,
+    public void increaseProductQuantity(@Valid @RequestBody ChangeQuantityOfProductToWarehouse request,
                                         @RequestParam(required = false) OrderState state) {
         log.debug("Пополнение запасов: {}", request);
-        service.updateProductQuantity(request, Optional.ofNullable(state));
+        service.updateProductQuantity(request, state);
     }
 
     @GetMapping("/address")

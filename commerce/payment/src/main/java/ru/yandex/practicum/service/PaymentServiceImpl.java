@@ -1,6 +1,5 @@
 package ru.yandex.practicum.service;
 
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,15 +32,13 @@ public class PaymentServiceImpl implements PaymentInterface {
     @Transactional
     public PaymentDto enrichOrderWithPayment(UUID orderId, List<OrderPaymentRequest> paymentRequests) {
         // Проверка статуса заказа OrderState происходит на стороне сервиса Order
-        BigDecimal sum = paymentRequests.stream()
-                .map(req -> req.getPrice().multiply(BigDecimal.valueOf(req.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal sum = calculateProductPrice(paymentRequests);
 
         Payment payment = Payment.builder()
                 .orderId(orderId)
                 .productsPrice(sum)
                 .tax(getTax(sum))
-                .totalPrice(sum.add(getTax(sum)))
+                .totalPrice(calculateTotalPrice(sum))
                 .build();
 
         repository.save(payment);
@@ -50,9 +47,9 @@ public class PaymentServiceImpl implements PaymentInterface {
 
     @Override
     @Transactional
-    public PaymentDto setPaymentState(UUID paymentId, PaymentState state) {
+    public void setPaymentState(UUID paymentId, PaymentState state) {
         Payment payment = repository.findById(paymentId).orElseThrow(
-                () -> new NoSuchElementException(""));
+                () -> new NoSuchElementException("FFFFFFFFFFFFFFFFFFFF"));
         switch (state) {
             case PaymentState.PENDING -> payment.setState(PaymentState.PENDING);
             case PaymentState.SUCCESS -> {
@@ -64,13 +61,23 @@ public class PaymentServiceImpl implements PaymentInterface {
                 setOrderState(payment.getOrderId(), OrderState.PAYMENT_FAILED);
             }
         }
-
         repository.save(payment);
-        return mapper.toDto(payment);
+
     }
 
     @Override
-    public BigDecimal getTax(BigDecimal sumOfPrice) {
+    public BigDecimal calculateProductPrice(List<OrderPaymentRequest> paymentRequests) {
+        return paymentRequests.stream()
+                .map(req -> req.getPrice().multiply(BigDecimal.valueOf(req.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public BigDecimal calculateTotalPrice(BigDecimal sumOfPrice) {
+        return sumOfPrice.add(getTax(sumOfPrice));
+    }
+
+    private BigDecimal getTax(BigDecimal sumOfPrice) {
         return sumOfPrice.multiply(BigDecimal.valueOf(0.1))
                 .setScale(2, RoundingMode.HALF_UP);
     }

@@ -7,12 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.DTO.order.OrderDto;
 import ru.yandex.practicum.DTO.payment.PaymentDto;
 import ru.yandex.practicum.DTO.shoppingStore.OrderPaymentRequest;
 import ru.yandex.practicum.api.PaymentApi;
+import ru.yandex.practicum.enums.payment.PaymentState;
 import ru.yandex.practicum.interfaces.PaymentInterface;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,38 +27,37 @@ public class PaymentController implements PaymentApi {
 
     @Override
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/pay")
-    public PaymentDto createPayment(@RequestParam @NotNull UUID orderId,
-                                    @RequestBody List<OrderPaymentRequest> paymentRequests) {
-        log.info("Запрос оплату заказа: {}", orderId);
+    public PaymentDto enrichOrderWithPayment(@RequestParam @NotNull UUID orderId,
+                                    @RequestBody @Valid List<OrderPaymentRequest> paymentRequests) {
+        log.info("Запрос на оплату заказа: {}", orderId);
         return payment.enrichOrderWithPayment(orderId, paymentRequests);
     }
 
     @Override
     @ResponseStatus(HttpStatus.OK)
-    public Double calculateProductPrice(@Valid @RequestBody OrderDto orderDto) {
-        log.info("Запрос на расчет стоимости товаров для заказа: {}", orderDto.getOrderId());
-        return paymentService.calculateProductPrice(orderDto);
+    public BigDecimal calculateProductPrice(@Valid @RequestBody List<OrderPaymentRequest> paymentRequests) {
+        log.info("Запрос на расчет стоимости товаров: {}", paymentRequests);
+        return payment.calculateProductPrice(paymentRequests);
     }
 
     @Override
     @ResponseStatus(HttpStatus.OK)
-    public Double calculateTotalPrice(@Valid @RequestBody OrderDto orderDto) {
-        log.info("Запрос на расчет полной стоимости заказа: {}", orderDto.getOrderId());
-        return paymentService.calculateTotalPrice(orderDto);
+    public BigDecimal calculateTotalPrice(@RequestBody BigDecimal sumOfPrice) {
+        log.info("Запрос на расчет полной стоимости заказа");
+        return payment.calculateTotalPrice(sumOfPrice);
     }
 
     @Override
     @ResponseStatus(HttpStatus.OK)
-    public void setPaymentFailed(@PathVariable UUID paymentId) {
+    public void setPaymentFailed(@RequestBody @NotNull UUID paymentId) {
         log.info("Запрос на отметку неудачной оплаты: {}", paymentId);
-        paymentService.setPaymentFailed(paymentId);
+        payment.setPaymentState(paymentId, PaymentState.FAILED);
     }
 
     @Override
     @ResponseStatus(HttpStatus.OK)
-    public void payOrder(@PathVariable UUID paymentId) {
-        log.info("Запрос на подтверждение успешной оплаты: {}", paymentId);
-        paymentService.payOrder(paymentId);
+    public void payOrder(@RequestBody @NotNull UUID paymentId) {
+        log.info("Запрос на отметку успешной оплаты: {}", paymentId);
+        payment.setPaymentState(paymentId, PaymentState.SUCCESS);
     }
 }
