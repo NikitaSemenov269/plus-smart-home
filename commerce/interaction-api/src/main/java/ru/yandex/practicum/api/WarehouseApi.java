@@ -9,7 +9,6 @@ import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
 import ru.yandex.practicum.enums.order.OrderState;
 
-
 @FeignClient(name = "warehouse", path = "/api/v1/warehouse")
 public interface WarehouseApi {
 

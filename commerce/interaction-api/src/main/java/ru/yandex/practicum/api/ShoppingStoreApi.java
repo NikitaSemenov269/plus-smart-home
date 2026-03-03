@@ -1,6 +1,5 @@
 package ru.yandex.practicum.api;
 
-import jakarta.validation.constraints.NotNull;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -7,12 +7,12 @@ import ru.yandex.practicum.DTO.order.OrderDto;
 import ru.yandex.practicum.DTO.order.ProductReturnRequest;
 import ru.yandex.practicum.enums.order.OrderState;
 
+import java.math.BigDecimal;
 import java.util.UUID;
-
 
 public interface OrderService {
 
-    OrderDto createNewOrder(CreateNewOrderRequest dto);
+    OrderDto createNewOrder(String username, CreateNewOrderRequest dto);
 
     void payForTheOrder(UUID orderId);
 
@@ -21,5 +21,9 @@ public interface OrderService {
     OrderDto orderRefund(ProductReturnRequest productReturnRequest);
 
     OrderDto setOrderState(UUID orderId, OrderState state);
+
+    BigDecimal getTotalPrice(UUID orderId);
+
+    BigDecimal getDeliveryPrice(UUID orderId);
 }
 

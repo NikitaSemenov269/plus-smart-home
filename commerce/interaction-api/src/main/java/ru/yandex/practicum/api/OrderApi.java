@@ -1,35 +1,39 @@
 package ru.yandex.practicum.api;
 
-import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.DTO.order.CreateNewOrderRequest;
 import ru.yandex.practicum.DTO.order.OrderDto;
 import ru.yandex.practicum.DTO.order.ProductReturnRequest;
+import ru.yandex.practicum.enums.order.OrderState;
 
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @FeignClient(name = "order", path = "/api/v1/order")
 public interface OrderApi {
     @PutMapping
-    OrderDto createOrder(@RequestParam(name = "username") String username,
-                         @Valid @RequestBody CreateNewOrderRequest newOrderRequest);
+    OrderDto createNewOrder(@RequestParam(name = "username") String username,
+                            @RequestBody CreateNewOrderRequest newOrderRequest);
 
     @GetMapping
-    List<OrderDto> getUserOrders(@RequestParam(name = "username") String username);
+    Page<OrderDto> getOrdersOfUser(@RequestParam String username,
+                                   @PageableDefault(size = 20, page = 0) Pageable pageable);
 
     @PostMapping("/payment")
-    OrderDto payOrder(@RequestBody UUID orderId);
+    void payForTheOrder(UUID orderId);
 
     @PostMapping("/return")
-    OrderDto returnOrder(@Valid @RequestBody ProductReturnRequest returnRequest);
+    OrderDto orderRefund(ProductReturnRequest productReturnRequest);
 
     @PostMapping("/payment/failed")
-    OrderDto setPaymentFailed(@RequestBody UUID orderId);
+    void setOrderState(UUID orderId, OrderState state);
 
     @PostMapping("/calculate/total")
-    OrderDto calculateTotalPrice(@RequestBody UUID orderId);
+    BigDecimal getTotalPrice(@RequestBody UUID orderId);
 
     @PostMapping("/assembly")
     OrderDto assembleOrder(@RequestBody UUID orderId);
@@ -38,7 +42,7 @@ public interface OrderApi {
     OrderDto assembleOrderFailed(@RequestBody UUID orderId);
 
     @PostMapping("/calculate/delivery")
-    OrderDto calculateDeliveryPrice(@RequestBody UUID orderId);
+    BigDecimal getDeliveryPrice(@RequestBody UUID orderId);
 
     @PostMapping("/delivery")
     OrderDto deliveryOrder(@RequestBody UUID orderId);

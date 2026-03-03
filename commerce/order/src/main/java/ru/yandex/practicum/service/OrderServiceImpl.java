@@ -28,6 +28,7 @@ import ru.yandex.practicum.interfaces.OrderService;
 import ru.yandex.practicum.mapper.OrderMapper;
 import ru.yandex.practicum.model.Order;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Slf4j
@@ -36,7 +37,6 @@ import java.util.*;
 public class OrderServiceImpl implements OrderService {
     private final OrderMapper mapper;
     private final OrderRepository repository;
-    private final ShoppingCartApi shoppingCartApi;
     private final ShoppingStoreApi shoppingStoreApi;
     private final WarehouseApi warehouseApi;
     private final PaymentApi paymentApi;
@@ -44,7 +44,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDto createNewOrder(CreateNewOrderRequest dto) {
+    public OrderDto createNewOrder(String username, CreateNewOrderRequest dto) {
         log.info("FFFFFFFFFFFFFFFFFFFFFFFFF");
         BookedProductsDto bookedProductsDto = warehouseApi.checkQuantityOfGoodsInStock(dto.getShoppingCart());
 
@@ -56,6 +56,7 @@ public class OrderServiceImpl implements OrderService {
         // Внедрить проверку статуса заказа и корзины на стороне их сервисов (добавить методы возвращающие статус)
         // Статус заказа устанавливается дефолтно на NEW
         Order newOrder = mapper.toOrder(dto);
+        newOrder.setUsername(username);
         newOrder.setFragile(bookedProductsDto.getFragile());
         newOrder.setDeliveryWeight(bookedProductsDto.getDeliveryWeight());
         newOrder.setDeliveryVolume(bookedProductsDto.getDeliveryVolume());
@@ -192,5 +193,19 @@ public class OrderServiceImpl implements OrderService {
 
         repository.save(order);
         return mapper.toDto(order);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BigDecimal getTotalPrice(UUID orderId) {
+        return repository.findById(orderId).orElseThrow(
+                () -> new OrderNotFoundException("FFFFFFFFFFFF")).getTotalPrice();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BigDecimal getDeliveryPrice(UUID orderId) {
+        return repository.findById(orderId).orElseThrow(
+                () -> new OrderNotFoundException("FFFFFFFFFFFF")).getDeliveryPrice();
     }
 }

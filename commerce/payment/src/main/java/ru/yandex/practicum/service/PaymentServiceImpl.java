@@ -54,11 +54,11 @@ public class PaymentServiceImpl implements PaymentInterface {
             case PaymentState.PENDING -> payment.setState(PaymentState.PENDING);
             case PaymentState.SUCCESS -> {
                 payment.setState(PaymentState.SUCCESS);
-                setOrderState(payment.getOrderId(), OrderState.PAID);
+                orderApi.setOrderState(payment.getOrderId(), OrderState.PAID);
             }
             case PaymentState.FAILED -> {
                 payment.setState(PaymentState.FAILED);
-                setOrderState(payment.getOrderId(), OrderState.PAYMENT_FAILED);
+                orderApi.setOrderState(payment.getOrderId(), OrderState.PAYMENT_FAILED);
             }
         }
         repository.save(payment);
