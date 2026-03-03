@@ -48,7 +48,7 @@ class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ShoppingCartDto addProductsAtShoppingCart(String username, Map<UUID, Integer> products) {
+    public ShoppingCartDto addProductsAtShoppingCart(String username, Map<UUID, Long> products) {
         ShoppingCart shoppingCart;
         // Если у корзины, куда добавляются новые товары, нет id - создаем новую корзину.
         try {
@@ -109,7 +109,7 @@ class ShoppingCartServiceImpl implements ShoppingCartService {
     public ShoppingCartDto deleteItemsFromShoppingCart(String username, Set<UUID> productIds) {
         ShoppingCart shoppingCart = findByUsernameOrElseThrow(username);
         if (!CartState.DEACTIVATE.equals(shoppingCart.getCartState())) {
-            Map<UUID, Integer> products = shoppingCart.getProducts();
+            Map<UUID, Long> products = shoppingCart.getProducts();
 
             productIds.stream()
                     .filter(products::containsKey)
@@ -167,7 +167,7 @@ class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Transactional
-    public ShoppingCart createNewCart(String username, Map<UUID, Integer> newProducts) {
+    public ShoppingCart createNewCart(String username, Map<UUID, Long> newProducts) {
         ShoppingCart shoppingCart = ShoppingCart.builder()
                 .username(username)
                 .products(newProducts)

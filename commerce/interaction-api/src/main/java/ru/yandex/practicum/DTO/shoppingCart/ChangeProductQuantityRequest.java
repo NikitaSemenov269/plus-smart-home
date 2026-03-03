@@ -20,5 +20,5 @@ public class ChangeProductQuantityRequest {
 
     @NotNull
     @Min(value = 1, message = "Количество товаров не может быть меньше 1.")
-    private Integer newQuantity;
+    private Long newQuantity;
 }

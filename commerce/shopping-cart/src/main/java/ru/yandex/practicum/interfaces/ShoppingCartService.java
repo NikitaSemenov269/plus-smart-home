@@ -2,7 +2,6 @@ package ru.yandex.practicum.interfaces;
 
 import ru.yandex.practicum.DTO.shoppingCart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.model.ShoppingCart;
 
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +11,7 @@ public interface ShoppingCartService {
 
     ShoppingCartDto getShoppingCartOfUser(String username);
 
-    ShoppingCartDto addProductsAtShoppingCart(String username, Map<UUID, Integer> products);
+    ShoppingCartDto addProductsAtShoppingCart(String username, Map<UUID, Long> products);
 
     void deactivatingTheShoppingCart(String username);
 

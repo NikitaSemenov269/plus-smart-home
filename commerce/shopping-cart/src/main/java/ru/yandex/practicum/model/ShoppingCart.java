@@ -30,7 +30,7 @@ public class ShoppingCart {
     )
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
-    private Map<UUID, Integer> products;
+    private Map<UUID, Long> products;
 
     // Состояние корзины
     @Enumerated(EnumType.STRING)
