@@ -24,13 +24,13 @@ public interface OrderApi {
                                    @PageableDefault(size = 20, page = 0) Pageable pageable);
 
     @PostMapping("/payment")
-    void payForTheOrder(UUID orderId);
+    void payForTheOrder(@RequestBody UUID orderId);
 
     @PostMapping("/return")
-    OrderDto orderRefund(ProductReturnRequest productReturnRequest);
+    OrderDto orderRefund(@RequestBody ProductReturnRequest productReturnRequest);
 
     @PostMapping("/payment/failed")
-    void setOrderState(UUID orderId, OrderState state);
+    void setOrderState(@RequestBody UUID orderId, OrderState state);
 
     @PostMapping("/calculate/total")
     BigDecimal getTotalPrice(@RequestBody UUID orderId);
