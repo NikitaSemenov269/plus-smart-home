@@ -21,7 +21,8 @@ public interface OrderApi {
 
     @GetMapping
     Page<OrderDto> getOrdersOfUser(@RequestParam String username,
-                                   @PageableDefault(size = 20, page = 0) Pageable pageable);
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "20") int size);
 
     @PostMapping("/payment")
     void payForTheOrder(@RequestBody UUID orderId);
@@ -30,7 +31,8 @@ public interface OrderApi {
     OrderDto orderRefund(@RequestBody ProductReturnRequest productReturnRequest);
 
     @PostMapping("/payment/failed")
-    void setOrderState(@RequestBody UUID orderId, OrderState state);
+    void setOrderState(@RequestParam UUID orderId,
+                       @RequestBody OrderState state);
 
     @PostMapping("/calculate/total")
     BigDecimal getTotalPrice(@RequestBody UUID orderId);

@@ -62,7 +62,7 @@ public class DeliveryServiceImpl implements DeliveryInterface {
         }
         if (DeliveryState.FAILED.equals(delivery.getDeliveryState()) ||
                 DeliveryState.CANCELLED.equals(delivery.getDeliveryState())) {
-            throw new BadDeliveryStateException("FFFFFFFFFFFFFFFFFF");
+            throw new BadDeliveryStateException("Статус заказа " + deliveryId + " не соответствует ожидаемому.");
         }
         delivery.setDeliveryState(DeliveryState.IN_PROGRESS);
     }

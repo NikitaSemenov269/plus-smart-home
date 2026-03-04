@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -37,7 +38,9 @@ public class OrderController implements OrderApi {
 
     @ResponseStatus(HttpStatus.OK)
     public Page<OrderDto> getOrdersOfUser(@NotBlank String username,
-                                          @PageableDefault(size = 20, page = 0) Pageable pageable) {
+                                          @RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
         return service.getOrdersOfUser(username, pageable);
     }
 

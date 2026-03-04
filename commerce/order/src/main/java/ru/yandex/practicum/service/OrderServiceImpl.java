@@ -45,7 +45,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDto createNewOrder(String username, CreateNewOrderRequest dto) {
-        log.info("FFFFFFFFFFFFFFFFFFFFFFFFF");
+        log.info("Попытка создания нового заказа для пользователя {}", username);
         BookedProductsDto bookedProductsDto = warehouseApi.checkQuantityOfGoodsInStock(dto.getShoppingCart());
 
         // Бронируем товары на складе для заказа.
@@ -91,14 +91,14 @@ public class OrderServiceImpl implements OrderService {
         newOrder.setProductPrice(paymentDto.getProductsPrice());
         newOrder.setTotalPrice(paymentDto.getTotalPrice());
 
-        log.info("FFFFFFFFFFFFFFFFFFFFFFFFF");
+        log.info("Заказ успешно сформирован. ID заказа: {}", newOrder.getOrderId());
         return mapper.toDto(newOrder);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<OrderDto> getOrdersOfUser(String username, Pageable pageable) {
-        log.info("FFFFFFFFFFFFFFF");
+        log.info("Попытка получения всех заказов пользователя {}", username);
         return repository.findAllByUsername(username, pageable).map(mapper::toDto);
     }
 
@@ -106,7 +106,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void payForTheOrder(UUID orderId) {
         Order order = repository.findById(orderId).orElseThrow(
-                () -> new OrderNotFoundException(""));
+                () -> new OrderNotFoundException("Заказ с ID " + orderId + " не найден."));
 
         if (!order.getState().equals(OrderState.ON_PAYMENT)) {
             log.info("Статус заказа не соответствует ожидаемому. State: {}", order.getState());
@@ -121,11 +121,11 @@ public class OrderServiceImpl implements OrderService {
         Map<UUID, Long> productsReturn = productReturnRequest.getProducts();
 
         if (productsReturn.isEmpty()) {
-            throw new ProductNotFoundException("FFFFFFFFFFFFFFFFFFFFFF");
+            throw new ProductNotFoundException("Для возврата передан пустой список товаров.");
         }
 
         Order order = repository.findById(productReturnRequest.getOrderId()).orElseThrow(
-                () -> new OrderNotFoundException("FFFFFF")
+                () -> new OrderNotFoundException("Заказ не найден.")
         );
 
         Map<UUID, Long> failure = new HashMap<>();
@@ -199,13 +199,13 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public BigDecimal getTotalPrice(UUID orderId) {
         return repository.findById(orderId).orElseThrow(
-                () -> new OrderNotFoundException("FFFFFFFFFFFF")).getTotalPrice();
+                () -> new OrderNotFoundException("Не найден заказ с id: " + orderId)).getTotalPrice();
     }
 
     @Override
     @Transactional(readOnly = true)
     public BigDecimal getDeliveryPrice(UUID orderId) {
         return repository.findById(orderId).orElseThrow(
-                () -> new OrderNotFoundException("FFFFFFFFFFFF")).getDeliveryPrice();
+                () -> new OrderNotFoundException("Не найден заказ с id: " + orderId)).getDeliveryPrice();
     }
 }
