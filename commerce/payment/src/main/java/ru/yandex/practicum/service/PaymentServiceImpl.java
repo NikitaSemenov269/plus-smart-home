@@ -49,7 +49,7 @@ public class PaymentServiceImpl implements PaymentInterface {
     @Transactional
     public void setPaymentState(UUID paymentId, PaymentState state) {
         Payment payment = repository.findById(paymentId).orElseThrow(
-                () -> new NoSuchElementException("FFFFFFFFFFFFFFFFFFFF"));
+                () -> new NoSuchElementException("Заявка на оплату " + paymentId + " не найдена"));
         switch (state) {
             case PaymentState.PENDING -> payment.setState(PaymentState.PENDING);
             case PaymentState.SUCCESS -> {
