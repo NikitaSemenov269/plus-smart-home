@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.DTO.shoppingStore.SetProductQuantity;
+import ru.yandex.practicum.api.ShoppingStoreApi;
 import ru.yandex.practicum.enums.shoppingStore.ProductCategory;
 import ru.yandex.practicum.enums.shoppingStore.QuantityState;
 import ru.yandex.practicum.interfaces.ShoppingStoreService;
@@ -26,7 +27,7 @@ import java.util.UUID;
 @RestController
 @Validated
 @RequestMapping("/api/v1/shopping-store")
-public class ShoppingStoreController {
+public class ShoppingStoreController implements ShoppingStoreApi {
     private final ShoppingStoreService service;
 
     @PutMapping

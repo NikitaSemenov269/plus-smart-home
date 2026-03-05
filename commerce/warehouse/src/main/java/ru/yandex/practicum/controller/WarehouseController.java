@@ -11,6 +11,7 @@ import ru.yandex.practicum.DTO.warehouse.ChangeQuantityOfProductToWarehouse;
 import ru.yandex.practicum.DTO.warehouse.AddressDto;
 import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
+import ru.yandex.practicum.api.WarehouseApi;
 import ru.yandex.practicum.enums.order.OrderState;
 import ru.yandex.practicum.interfaces.WarehouseService;
 
@@ -21,7 +22,7 @@ import java.util.Optional;
 @RestController
 @Validated
 @RequestMapping("/api/v1/warehouse")
-public class WarehouseController {
+public class WarehouseController implements WarehouseApi {
     private final WarehouseService service;
 
     @PutMapping

@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.DTO.shoppingCart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ public interface ShoppingCartApi {
 
     @PutMapping
     ShoppingCartDto addProductsAtShoppingCart(@RequestParam String username,
-                                              @RequestBody ShoppingCartDto shoppingCartDto);
+                                              @RequestBody Map<UUID, Long> products);
 
     @GetMapping
     ShoppingCartDto getShoppingCartOfUser(@RequestParam String username);
@@ -27,7 +28,6 @@ public interface ShoppingCartApi {
 
     @PostMapping("change-quantity")
     ShoppingCartDto changeNumberOfItemsInTheBasket(
-            @RequestParam
-            String username,
+            @RequestParam String username,
             @RequestBody ChangeProductQuantityRequest changeQuantity);
 }
