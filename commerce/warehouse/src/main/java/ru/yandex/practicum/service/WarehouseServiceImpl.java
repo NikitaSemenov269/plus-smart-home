@@ -5,10 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.DTO.warehouse.AddProductToWarehouseRequest;
+import ru.yandex.practicum.DTO.warehouse.ChangeQuantityOfProductToWarehouse;
 import ru.yandex.practicum.DTO.warehouse.AddressDto;
 import ru.yandex.practicum.DTO.warehouse.BookedProductsDto;
 import ru.yandex.practicum.DTO.warehouse.NewProductInWarehouseRequest;
+import ru.yandex.practicum.enums.order.OrderState;
 import ru.yandex.practicum.exception.warehouse.NoSpecifiedProductInWarehouseException;
 import ru.yandex.practicum.exception.warehouse.ProductInShoppingCartLowQuantityInWarehouse;
 import ru.yandex.practicum.exception.warehouse.SpecifiedProductAlreadyInWarehouseException;
@@ -54,7 +55,7 @@ public class WarehouseServiceImpl implements WarehouseService {
             return emptyCart();
         }
 
-        Map<UUID, Integer> requestedProducts = shoppingCartDto.getProducts();
+        Map<UUID, Long> requestedProducts = shoppingCartDto.getProducts();
         List<ProductOfWarehouse> products = repository.findAllById(requestedProducts.keySet());
 
         if (products.size() < requestedProducts.size()) {
@@ -68,12 +69,11 @@ public class WarehouseServiceImpl implements WarehouseService {
             throw new NoSpecifiedProductInWarehouseException("Товары не найдены на складе: " + missingIds);
         }
 
-        Map<UUID, Integer> insufficientProducts = new HashMap<>();
+        Map<UUID, Integer> insufficientProducts = new HashMap<>(); // Коллекция для количества отсутствующих позиций.
         List<ProductOfWarehouse> verifiedProducts = new ArrayList<>();
 
         for (ProductOfWarehouse product : products) {
-            Integer requestedQty = requestedProducts.get(product.getProductId());
-
+            Integer requestedQty = Math.toIntExact(requestedProducts.get(product.getProductId()));
             if (product.getQuantity() >= requestedQty) {
                 verifiedProducts.add(product);
             } else {
@@ -110,11 +110,23 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     @Transactional
-    public void increaseProductQuantity(AddProductToWarehouseRequest request) {
-        log.debug("Изменение остатков продукта {} на складе.", request);
-        validIdProduct(request.getProductId());
-        ProductOfWarehouse product = repository.getReferenceById(request.getProductId());
-        product.setQuantity(request.getQuantity());
+    public void updateProductQuantity(ChangeQuantityOfProductToWarehouse request, OrderState state) {
+        log.debug("Изменение остатков продуктов {} на складе.", request.toString());
+        Set<UUID> productIds = request.getProducts().keySet();
+
+        validIdsProduct(productIds);
+
+        List<ProductOfWarehouse> products = repository.findAllById(productIds);
+        repository.saveAll(products.stream()
+                .map(product -> {
+                    Long quantity = request.getProducts().get(product.getProductId());
+                    if (OrderState.PRODUCT_RETURNED.equals(state)) {
+                        product.setQuantity(product.getQuantity() + quantity);
+                    } else {
+                        product.setQuantity(product.getQuantity() - quantity);
+                    }
+                    return product;
+                }).toList());
     }
 
     @Override
@@ -128,18 +140,27 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public void validIdsProduct(Set<UUID> idsProduct) {
+        if (idsProduct.isEmpty()) {
+            throw new NoSpecifiedProductInWarehouseException("Передана пустая коллекция.");
+        }
+        if (!repository.allProductsExist(idsProduct, idsProduct.size())) {
+            List<UUID> productIds = repository.findExistingIds(idsProduct);
+
+            Set<UUID> missingIds = idsProduct.stream()
+                    .filter(id -> !productIds.contains(id))
+                    .collect(Collectors.toSet());
+
+            throw new NoSpecifiedProductInWarehouseException("Товары не найдены на складе: " + missingIds);
+        }
+    }
+
     private BookedProductsDto emptyCart() {
         return BookedProductsDto.builder()
                 .deliveryWeight(0.0)
                 .deliveryVolume(0.0)
                 .fragile(false)
                 .build();
-    }
-
-    @Transactional(readOnly = true)
-    private void validIdProduct(UUID idProduct) {
-        if (!repository.existsById(idProduct)) {
-            throw new NoSpecifiedProductInWarehouseException("Продукт c ID: " + idProduct + " не найден на складе.");
-        }
     }
 }

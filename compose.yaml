@@ -1,8 +1,7 @@
 services:
-
   hub-router-db:
     image: postgres:16.1
-    container_name: postgres_db
+    container_name: smart_home_tech_db
     ports:
       - "5433:5432"
     environment:

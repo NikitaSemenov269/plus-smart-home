@@ -1,6 +1,5 @@
 package ru.yandex.practicum.DTO.shoppingCart;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -14,11 +13,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ShoppingCartDto {
     private UUID shoppingCartId;
-
-    private Map<
-            @NotNull(message = "ID не может равняться null.")
-                    UUID,
-            @Min(value = 1, message = "Количество товаров не может быть меньше 1.")
-                    Integer>
-            products;
+    @NotNull
+    private Map<UUID, Long> products;
 }

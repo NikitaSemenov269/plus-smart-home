@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.DTO.shoppingCart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.DTO.shoppingCart.ShoppingCartDto;
+import ru.yandex.practicum.api.ShoppingCartApi;
 import ru.yandex.practicum.interfaces.ShoppingCartService;
 
 import java.util.Map;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @RestController
 @Validated
 @RequestMapping("/api/v1/shopping-cart")
-public class ShoppingCartController {
+public class ShoppingCartController implements ShoppingCartApi {
     private final ShoppingCartService service;
 
     @PutMapping
@@ -29,7 +30,7 @@ public class ShoppingCartController {
     public ShoppingCartDto addProductsAtShoppingCart(@RequestParam
                                                      @NotBlank(message = "Имя пользователя не может быть пустым," +
                                                              " или равняться null.") String username,
-                                                     @RequestBody(required = false) Map<UUID, Integer> products) {
+                                                     @RequestBody(required = false) Map<UUID, Long> products) {
         log.info("PUT. Добавление продукта в корзину");
         return service.addProductsAtShoppingCart(username, products);
     }

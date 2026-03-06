@@ -1,0 +1,7 @@
+package ru.yandex.practicum.exception.order;
+
+public class OrderNotFoundException extends RuntimeException {
+    public OrderNotFoundException(String message) {
+        super(message);
+    }
+}

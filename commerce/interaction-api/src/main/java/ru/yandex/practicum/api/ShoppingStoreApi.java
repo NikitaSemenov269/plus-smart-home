@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.DTO.shoppingStore.ProductDto;
 import ru.yandex.practicum.DTO.shoppingStore.SetProductQuantity;
 import ru.yandex.practicum.enums.shoppingStore.ProductCategory;
+import ru.yandex.practicum.enums.shoppingStore.QuantityState;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @FeignClient(name = "shopping-store", path = "/api/v1/shopping-store")
@@ -22,6 +25,9 @@ public interface ShoppingStoreApi {
     @GetMapping
     Page<ProductDto> getProductsByCategory(@RequestParam ProductCategory category, Pageable pageable);
 
+    @GetMapping
+    List<ProductDto> getProductsByIds(@RequestBody Set<UUID> productsId);
+
     @PostMapping
     ProductDto updateProduct(@RequestBody ProductDto productDto);
 
@@ -29,5 +35,6 @@ public interface ShoppingStoreApi {
     boolean removeProduct(@RequestBody UUID productId);
 
     @PostMapping("/quantityState")
-    boolean updateQuantityState(@RequestBody SetProductQuantity setProductQuantity);
+    boolean setQuantityState(@RequestParam UUID productId,
+                             @RequestBody QuantityState quantityState);
 }
