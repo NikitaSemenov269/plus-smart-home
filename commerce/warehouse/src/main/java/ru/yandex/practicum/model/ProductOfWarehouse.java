@@ -22,9 +22,9 @@ public class ProductOfWarehouse {
     @Embedded
     private Dimension dimension;
     @Column(name = "weight", nullable = false)
-    Double weight;
+    private Double weight;
     @Column(name = "fragile", nullable = false)
-    Boolean fragile;
+    private Boolean fragile;
     @Column(name = "quantity", nullable = false)
-    Long quantity;
+    private Long quantity;
 }
